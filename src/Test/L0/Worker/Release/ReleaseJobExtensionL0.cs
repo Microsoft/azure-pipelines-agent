@@ -122,7 +122,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Release
                 Directory.CreateDirectory(this.stubWorkFolder);
             }
 
-            _ec = new Mock<IExecutionContext>();
+            _ec = hc.CreateExecutionContext();
 
             _extensionManager = new Mock<IExtensionManager>();
             _sourceProvider = new Mock<ISourceProvider>();

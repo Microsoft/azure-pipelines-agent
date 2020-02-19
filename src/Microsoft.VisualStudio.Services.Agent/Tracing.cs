@@ -104,6 +104,21 @@ namespace Microsoft.VisualStudio.Services.Agent
             Trace(TraceEventType.Verbose, $"Leaving {name}");
         }
 
+        public void Output(string message)
+        {
+            Trace(TraceEventType.Information, message);
+        }
+
+        public void Command(string message)
+        {
+            Trace(TraceEventType.Information, message);
+        }
+
+        public void Debug(string message)
+        {
+            Trace(TraceEventType.Verbose, message);
+        }
+
         public void Dispose()
         {
             Dispose(true);

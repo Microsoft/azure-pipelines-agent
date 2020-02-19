@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     }
 
     [ServiceLocator(Default = typeof(ExecutionContext))]
-    public interface IExecutionContext : IAgentService
+    public interface IExecutionContext : IAgentService, IBaseExecutionContext
     {
         Guid Id { get; }
         Task ForceCompleted { get; }
@@ -42,7 +42,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         Variables TaskVariables { get; }
         HashSet<string> OutputVariables { get; }
         List<IAsyncCommandContext> AsyncCommands { get; }
-        List<string> PrependPath { get; }
+        List<string> PathsToPrepend { get; }
         List<ContainerInfo> Containers { get; }
         List<ContainerInfo> SidecarContainers { get; }
 
@@ -54,6 +54,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         // logging
         bool WriteDebug { get; }
         long Write(string tag, string message);
+        void Section(string message);
         void QueueAttachFile(string type, string name, string filePath);
 
         // timeline record update methods
@@ -111,7 +112,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public Variables TaskVariables { get; private set; }
         public HashSet<string> OutputVariables => _outputvariables;
         public bool WriteDebug { get; private set; }
-        public List<string> PrependPath { get; private set; }
+        public List<string> PathsToPrepend { get; private set; }
         public List<ContainerInfo> Containers { get; private set; }
         public List<ContainerInfo> SidecarContainers { get; private set; }
         public List<IAsyncCommandContext> AsyncCommands => _asyncCommands;
@@ -189,7 +190,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             child._cancellationTokenSource = new CancellationTokenSource();
             child.WriteDebug = WriteDebug;
             child._parentExecutionContext = this;
-            child.PrependPath = PrependPath;
+            child.PathsToPrepend = PathsToPrepend;
             child.Containers = Containers;
             child.SidecarContainers = SidecarContainers;
             child._outputForward = outputForward;
@@ -418,7 +419,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Variables.StringTranslator = TranslatePathForStepTarget;
 
             // Prepend Path
-            PrependPath = new List<string>();
+            PathsToPrepend = new List<string>();
 
             // Docker (JobContainer)
             string imageName = Variables.Get("_PREVIEW_VSTS_DOCKER_IMAGE");
@@ -733,46 +734,46 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 _currentStepTarget = Containers.FirstOrDefault(x => string.Equals(x.ContainerName, target?.Target, StringComparison.OrdinalIgnoreCase));
             }
         }
-    }
 
-    // The Error/Warning/etc methods are created as extension methods to simplify unit testing.
-    // Otherwise individual overloads would need to be implemented (depending on the unit test).
-    public static class ExecutionContextExtension
-    {
-        public static void Error(this IExecutionContext context, Exception ex)
+        public void Error(Exception ex)
         {
-            context.Error(ex.Message);
-            context.Debug(ex.ToString());
+            Error(ex.Message);
+            Debug(ex.ToString());
         }
 
         // Do not add a format string overload. See comment on ExecutionContext.Write().
-        public static void Error(this IExecutionContext context, string message)
+        public void Error(string message)
         {
-            context.AddIssue(new Issue() { Type = IssueType.Error, Message = message });
+            AddIssue(new Issue() { Type = IssueType.Error, Message = message });
         }
 
         // Do not add a format string overload. See comment on ExecutionContext.Write().
-        public static void Warning(this IExecutionContext context, string message)
+        public void Warning(string message)
         {
-            context.AddIssue(new Issue() { Type = IssueType.Warning, Message = message });
+            AddIssue(new Issue() { Type = IssueType.Warning, Message = message });
         }
 
         // Do not add a format string overload. See comment on ExecutionContext.Write().
-        public static void Output(this IExecutionContext context, string message)
+        public void Output(string message)
         {
-            context.Write(null, message);
+            Write(null, message);
+        }
+
+        public void Info(string message)
+        {
+            Write(null, message);
         }
 
         // Do not add a format string overload. See comment on ExecutionContext.Write().
-        public static void Command(this IExecutionContext context, string message)
+        public void Command(string message)
         {
-            context.Write(WellKnownTags.Command, message);
+            Write(WellKnownTags.Command, message);
         }
 
         // Do not add a format string overload. See comment on ExecutionContext.Write().
-        public static void Section(this IExecutionContext context, string message)
+        public void Section(string message)
         {
-            context.Write(WellKnownTags.Section, message);
+            Write(WellKnownTags.Section, message);
         }
 
         //
@@ -781,12 +782,45 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         // Why are my inputs not working?  It's not meant for dev debugging which is diag
         //
         // Do not add a format string overload. See comment on ExecutionContext.Write().
-        public static void Debug(this IExecutionContext context, string message)
+        public void Debug(string message)
         {
-            if (context.WriteDebug)
+            if (WriteDebug)
             {
-                context.Write(WellKnownTags.Debug, message);
+                Write(WellKnownTags.Debug, message);
             }
+        }
+
+        public void Verbose(string message)
+        {
+            Debug(message);
+        }
+
+        public string GetVariableValueOrDefault(string variableName)
+        {
+            string value = null;
+            Variables.TryGetValue(variableName, out value);
+            return value;
+        }
+
+        public void PublishTelemetry(string area, string feature, Dictionary<string, string> properties)
+        {
+            // TODO: Implement this. Noop right now just to implement interface
+        }
+
+        public void PrependPath(string directory)
+        {
+            PathsToPrepend.Insert(0, directory);
+        }
+
+        public string GetInput(string name, bool required = false)
+        {
+            // TODO: Implment this. Noop right now just to implement interface
+            return null;
+        }
+
+        public IEnumerable<KeyValuePair<string, string>> EnumeratePublicVariables()
+        {
+            return Variables.Public;
         }
     }
 

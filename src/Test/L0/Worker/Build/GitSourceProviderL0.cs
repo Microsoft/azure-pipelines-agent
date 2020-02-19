@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         private Mock<IExecutionContext> GetTestExecutionContext(TestHostContext tc, string sourceFolder, string sourceBranch, string sourceVersion, bool enableAuth)
         {
             var trace = tc.GetTrace();
-            var executionContext = new Mock<IExecutionContext>();
+            var executionContext = tc.CreateExecutionContext();
             List<string> warnings;
             executionContext
                 .Setup(x => x.Variables)

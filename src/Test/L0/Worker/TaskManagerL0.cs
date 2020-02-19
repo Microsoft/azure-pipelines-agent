@@ -261,7 +261,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 }
                 else
                 {
-                    Assert.Null(definition.Data.Execution.Process);    
+                    Assert.Null(definition.Data.Execution.Process);
                 }
             }
             finally
@@ -413,7 +413,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void ExtractsAnAlreadyDownloadedZipToTheCorrectLocation()
         {
-            try 
+            try
             {
                 // Arrange
                 Setup(signatureVerificationEnabled: true);
@@ -754,14 +754,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             _ecTokenSource?.Dispose();
             _ecTokenSource = new CancellationTokenSource();
 
+            // Test host context.
+            _hc = new TestHostContext(this, name);
+
             // Mocks.
             _jobServer = new Mock<IJobServer>();
             _taskServer = new Mock<ITaskServer>();
-            _ec = new Mock<IExecutionContext>();
+            _ec = _hc.CreateExecutionContext();
             _ec.Setup(x => x.CancellationToken).Returns(_ecTokenSource.Token);
-
-            // Test host context.
-            _hc = new TestHostContext(this, name);
 
             // Random work folder.
             _workFolder = _hc.GetDirectory(WellKnownDirectory.Work);

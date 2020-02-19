@@ -456,7 +456,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 },
             };
 
-            _executionContext = new Mock<IExecutionContext>();
+            _executionContext = hostContext.CreateExecutionContext();
             _executionContext
                 .Setup(x => x.WriteDebug)
                 .Returns(true);

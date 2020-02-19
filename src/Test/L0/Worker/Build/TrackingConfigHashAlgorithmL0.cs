@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 // Arrange.
                 var collectionId = "7aee6dde-6381-4098-93e7-50a8264cf066";
                 var definitionId = "7";
-                var executionContext = new Mock<IExecutionContext>();
+                var executionContext = tc.CreateExecutionContext();
                 List<string> warnings;
                 executionContext
                     .Setup(x => x.Variables)
@@ -164,7 +164,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 
                 // Make sure that only the coll, def, identifier, and url are used in the hash
                 Assert.Equal(
-                    TrackingConfigHashAlgorithm.ComputeHash(collectionId, definitionId, new[] { repo1, repo2 }), 
+                    TrackingConfigHashAlgorithm.ComputeHash(collectionId, definitionId, new[] { repo1, repo2 }),
                     TrackingConfigHashAlgorithm.ComputeHash(collectionId, definitionId, new[] { repo1, repo2_newPath }));
 
                 // Make sure that different coll creates different hash

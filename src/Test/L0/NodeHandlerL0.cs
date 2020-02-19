@@ -169,7 +169,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             Dictionary<string, VariableValue> variables = null)
         {
             var trace = tc.GetTrace();
-            var executionContext = new Mock<IExecutionContext>();
+            var executionContext = tc.CreateExecutionContext();
             List<string> warnings;
             variables = variables ?? new Dictionary<string, VariableValue>();
 

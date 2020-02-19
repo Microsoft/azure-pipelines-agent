@@ -219,7 +219,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 hostContext: hc,
                 copy: new Dictionary<string, VariableValue>(),
                 warnings: out warnings);
-            _ec = new Mock<IExecutionContext>();
+            _ec = hc.CreateExecutionContext();
             _ec.SetupAllProperties();
             _ec.Setup(x => x.Variables).Returns(_variables);
         }

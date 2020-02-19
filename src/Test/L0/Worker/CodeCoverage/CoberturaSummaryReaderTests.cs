@@ -171,7 +171,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
         private void SetupMocks([CallerMemberName] string name = "")
         {
             TestHostContext hc = new TestHostContext(this, name);
-            _ec = new Mock<IExecutionContext>();
+            _ec = hc.CreateExecutionContext();
             _ec.Setup(x => x.AddIssue(It.IsAny<Issue>()))
             .Callback<Issue>
             ((issue) =>

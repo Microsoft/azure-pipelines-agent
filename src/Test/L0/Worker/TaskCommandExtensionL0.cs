@@ -167,7 +167,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         private void SetupMocks([CallerMemberName] string name = "")
         {
             _hc = new TestHostContext(this, name);
-            _ec = new Mock<IExecutionContext>();
+            _ec = _hc.CreateExecutionContext();
 
             _endpoint = new ServiceEndpoint()
             {

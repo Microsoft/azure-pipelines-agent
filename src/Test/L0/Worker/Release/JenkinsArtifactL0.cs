@@ -234,7 +234,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Release
         private TestHostContext Setup([CallerMemberName] string name = "")
         {
             TestHostContext hc = new TestHostContext(this, name);
-            _ec = new Mock<IExecutionContext>();
+            _ec = hc.CreateExecutionContext();
             _httpClient = new Mock<IGenericHttpClient>();
             _artifactDefinition = new ArtifactDefinition
             {

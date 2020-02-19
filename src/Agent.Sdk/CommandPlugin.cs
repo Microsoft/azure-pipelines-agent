@@ -97,6 +97,21 @@ namespace Agent.Sdk
                 Console.Error.WriteLine(message);
             }
         }
+        public void Error(Exception ex)
+        {
+            Error(ex.Message);
+            Debug(ex.ToString());
+        }
+
+        public void Warning(string message)
+        {
+            Output($"##[warning]{message}");
+        }
+
+        public void Command(string command)
+        {
+            Output($"##[command]{command}");
+        }
 
         public VssConnection InitializeVssConnection()
         {

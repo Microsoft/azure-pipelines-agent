@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 hostContext: hc,
                 copy: variablesToCopy,
                 warnings: out warnings);
-            _ec = new Mock<IExecutionContext>();
+            _ec = hc.CreateExecutionContext();
             _ec.SetupAllProperties();
             _ec.Setup(x => x.Variables).Returns(_variables);
             _stepsRunner = new StepsRunner();
@@ -53,9 +53,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 // Arrange.
                 var variableSets = new[]
                 {
-                    new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded)  },
-                    new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
-                    new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) }
+                    new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded)  },
+                    new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
+                    new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) }
                 };
                 foreach (var variableSet in variableSets)
                 {
@@ -85,12 +85,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 // Arrange.
                 var variableSets = new[]
                 {
-                    new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded)  },
-                    new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
-                    new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
-                    new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, true)  },
-                    new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(TaskResult.Failed, ExpressionManager.SucceededOrFailed, true) },
-                    new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(TaskResult.Failed, ExpressionManager.Always, true) }
+                    new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded)  },
+                    new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
+                    new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
+                    new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, true)  },
+                    new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(hc, TaskResult.Failed, ExpressionManager.SucceededOrFailed, true) },
+                    new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, true), CreateStep(hc, TaskResult.Failed, ExpressionManager.Always, true) }
                 };
                 foreach (var variableSet in variableSets)
                 {
@@ -122,12 +122,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 {
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded) },
                         Expected = false,
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
                         Expected = true,
                     },
                 };
@@ -161,27 +161,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 {
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
                         Expected = TaskResult.Succeeded,
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
                         Expected = TaskResult.Failed,
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
                         Expected = TaskResult.Failed,
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Failed, ExpressionManager.Always) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Failed, ExpressionManager.Always) },
                         Expected = TaskResult.Failed,
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Failed, ExpressionManager.Always, true) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Failed, ExpressionManager.Always, true) },
                         Expected = TaskResult.SucceededWithIssues,
                     },
                 };
@@ -215,57 +215,57 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 {
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded) },
                         Expected = TaskResult.Failed
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
                         Expected = TaskResult.Failed
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
                         Expected = TaskResult.Failed
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true), CreateStep(TaskResult.Failed, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true), CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded) },
                         Expected = TaskResult.Failed
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true), CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded) },
                         Expected = TaskResult.SucceededWithIssues
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true), CreateStep(TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true), CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded, continueOnError: true) },
                         Expected = TaskResult.SucceededWithIssues
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
                         Expected = TaskResult.Succeeded
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Failed, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded) },
                         Expected = TaskResult.Failed
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.SucceededWithIssues, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.SucceededWithIssues, ExpressionManager.Succeeded) },
                         Expected = TaskResult.SucceededWithIssues
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.SucceededWithIssues, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.SucceededWithIssues, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded) },
                         Expected = TaskResult.SucceededWithIssues
                     },
                     new
                     {
-                        Steps = new[] { CreateStep(TaskResult.SucceededWithIssues, ExpressionManager.Succeeded), CreateStep(TaskResult.Failed, ExpressionManager.Succeeded) },
+                        Steps = new[] { CreateStep(hc, TaskResult.SucceededWithIssues, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded) },
                         Expected = TaskResult.Failed
                     },
                 //  Abandoned
@@ -304,17 +304,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 {
                     new
                     {
-                        Step = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded) },
+                        Step = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded) },
                         Expected = false
                     },
                     new
                     {
-                        Step = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
+                        Step = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.SucceededOrFailed) },
                         Expected = true
                     },
                     new
                     {
-                        Step = new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
+                        Step = new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
                         Expected = true
                     }
                 };
@@ -345,10 +345,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 // Arrange.
                 var variableSets = new[]
                 {
-                    new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
-                    new[] { CreateStep(TaskResult.SucceededWithIssues, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
-                    new[] { CreateStep(TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) },
-                    new[] { CreateStep(TaskResult.Canceled, ExpressionManager.Succeeded), CreateStep(TaskResult.Succeeded, ExpressionManager.Always) }
+                    new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
+                    new[] { CreateStep(hc, TaskResult.SucceededWithIssues, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
+                    new[] { CreateStep(hc, TaskResult.Failed, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) },
+                    new[] { CreateStep(hc, TaskResult.Canceled, ExpressionManager.Succeeded), CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Always) }
                 };
                 foreach (var variableSet in variableSets)
                 {
@@ -382,8 +382,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 // Arrange.
                 var variableSets = new[]
                 {
-                    new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded) },
-                    new[] { CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded) },
+                    new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded) },
+                    new[] { CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded) },
                 };
                 foreach (var variableSet in variableSets)
                 {
@@ -410,11 +410,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 var stepTarget = new Pipelines.StepTarget {
                     Target = "container"
                 };
-                var step = CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded);
+                var step = CreateStep(hc, TaskResult.Succeeded, ExpressionManager.Succeeded);
                 step.Setup(x => x.Target).Returns(stepTarget);
 
                 // Override step context
-                var stepContext = new Mock<IExecutionContext>();
+                var stepContext = hc.CreateExecutionContext();
                 stepContext.SetupAllProperties();
                 stepContext.Setup(x => x.Variables).Returns(_variables);
                 stepContext.Setup(x => x.Complete(It.IsAny<TaskResult?>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -437,7 +437,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             }
         }
 
-        private Mock<IStep> CreateStep(TaskResult result, IExpressionNode condition, Boolean continueOnError = false)
+        private Mock<IStep> CreateStep(TestHostContext hc, TaskResult result, IExpressionNode condition, Boolean continueOnError = false)
         {
             // Setup the step.
             var step = new Mock<IStep>();
@@ -447,7 +447,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             step.Setup(x => x.RunAsync()).Returns(Task.CompletedTask);
 
             // Setup the step execution context.
-            var stepContext = new Mock<IExecutionContext>();
+            var stepContext = hc.CreateExecutionContext();
             stepContext.SetupAllProperties();
             stepContext.Setup(x => x.Variables).Returns(_variables);
             stepContext.Setup(x => x.Complete(It.IsAny<TaskResult?>(), It.IsAny<string>(), It.IsAny<string>()))

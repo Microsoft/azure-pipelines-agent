@@ -14,7 +14,10 @@ using System.Reflection;
 using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System.Net.Http.Headers;
 using Agent.Sdk;
+using Microsoft.VisualStudio.Services.Agent.Worker;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using Moq;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests
 {
@@ -386,6 +389,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             return containerInfo;
         }
 
+        public Mock<IExecutionContext> CreateExecutionContext()
+        {
+            var context = new Mock<IExecutionContext>();
+            context.Setup(x => x.Error(It.IsAny<Exception>())).Callback( (Exception ex) => {
+                context.Object.AddIssue(new Issue() { Type = IssueType.Error, Message = ex.Message });
+            });
+            context.Setup(x => x.Error(It.IsAny<string>())).Callback( (string message) => {
+                context.Object.AddIssue(new Issue() { Type = IssueType.Error, Message = message });
+            });
+            context.Setup(x => x.Warning(It.IsAny<string>())).Callback( (string message) => {
+                context.Object.AddIssue(new Issue() { Type = IssueType.Warning, Message = message });
+            });
+            context.Setup(x => x.Output(It.IsAny<string>())).Callback( (string message) => {
+            });
+            context.Setup(x => x.Command(It.IsAny<string>())).Callback( (string message) => {
+            });
+            context.Setup(x => x.Debug(It.IsAny<string>())).Callback( (string message) => {
+            });
+            context.Setup(x => x.Section(It.IsAny<string>())).Callback( (string message) => {
+            });
+
+            return context;
+        }
         public void ShutdownAgent(ShutdownReason reason)
         {
             ArgUtil.NotNull(reason, nameof(reason));

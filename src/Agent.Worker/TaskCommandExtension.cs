@@ -735,8 +735,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             var data = command.Data;
 
             ArgUtil.NotNullOrEmpty(data, this.Name);
-            context.PrependPath.RemoveAll(x => string.Equals(x, data, StringComparison.CurrentCulture));
-            context.PrependPath.Add(data);
+            context.PathsToPrepend.RemoveAll(x => string.Equals(x, data, StringComparison.CurrentCulture));
+            context.PathsToPrepend.Add(data);
         }
     }
 

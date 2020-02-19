@@ -275,7 +275,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             hc.SetSingleton<IConfigurationStore>(configStore.Object);
 
             // Setup the execution context.
-            _ec = new Mock<IExecutionContext>();
+            _ec = hc.CreateExecutionContext();
             List<string> warnings;
             _variables = new Variables(hc, new Dictionary<string, VariableValue>(), out warnings);
             _variables.Set(Constants.Variables.System.CollectionId, CollectionId);

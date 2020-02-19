@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+using System;
 
 namespace Agent.Sdk
 {
@@ -7,5 +8,11 @@ namespace Agent.Sdk
     {
         void Info(string message);
         void Verbose(string message);
+        void Error(Exception ex);
+        void Error(string message);
+        void Warning(string message);
+        void Output(string message);
+        void Command(string message);
+        void Debug(string message);
     }
 }

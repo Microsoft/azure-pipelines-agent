@@ -185,7 +185,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Telemetry
             var variables = new Variables(_hc, new Dictionary<string, VariableValue>(), out warnings);
             endpointAuthorization.Parameters[EndpointAuthorizationParameters.AccessToken] = "accesstoken";
 
-            _ec = new Mock<IExecutionContext>();
+            _ec = _hc.CreateExecutionContext();
             _ec.Setup(x => x.Endpoints).Returns(new List<ServiceEndpoint> { new ServiceEndpoint { Url = new Uri("http://dummyurl"), Name = WellKnownServiceEndpointNames.SystemVssConnection, Authorization = endpointAuthorization } });
             _ec.Setup(x => x.Variables).Returns(variables);
             var asyncCommands = new List<IAsyncCommandContext>();

@@ -177,7 +177,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             var tc = new TestHostContext(this);
 
             // Setup the execution context.
-            mockExecutionContext = new Mock<IExecutionContext>();
+            mockExecutionContext = tc.CreateExecutionContext();
             List<string> warnings;
             var variables = new Variables(tc, new Dictionary<string, VariableValue>(), out warnings);
             variables.Set(Constants.Variables.System.CollectionId, CollectionId);
