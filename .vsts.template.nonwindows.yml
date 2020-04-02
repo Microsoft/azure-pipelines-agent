@@ -1,6 +1,8 @@
 parameters:
   componentDetection: 'false'
   testLogTitle: 'Non-Windows'
+  targetRuntime: ''
+  skipTests: 'false'
   enableADOLogIssue: 'false'
 
 steps:
@@ -23,36 +25,37 @@ steps:
   condition: and(ne(variables['version'], ''), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
 # Build agent layout
-- script: ./dev.sh layout Release
+- script: ./dev.sh layout Release ${{ parameters.targetRuntime }}
   workingDirectory: src
   displayName: Build & Layout Release
   env:
     ADO_ENABLE_LOGISSUE: ${{ parameters.enableADOLogIssue }}
 
-# Run test
-- script: ./dev.sh testl0
-  workingDirectory: src
-  displayName: Unit tests
+- ${{ if eq(parameters.skipTests, 'false') }}:
+  # Run test
+  - script: ./dev.sh testl0
+    workingDirectory: src
+    displayName: Unit tests
 
-- script: ./dev.sh testl1
-  workingDirectory: src
-  displayName: Functional tests
-  condition: ne('${{ parameters.testLogTitle }}', 'Linux-ARM')
+  - script: ./dev.sh testl1
+    workingDirectory: src
+    displayName: Functional tests
+    condition: ne('${{ parameters.testLogTitle }}', 'Linux-ARM')
 
-# Publish test results
-- task: PublishTestResults@2
-  displayName: Publish Test Results **/*.trx
-  condition: always()
-  inputs:
-    testRunner: VSTest
-    testResultsFiles: '**/*.trx'
-    testRunTitle: 'Agent Tests - ${{ parameters.testLogTitle }}'
+  # Publish test results
+  - task: PublishTestResults@2
+    displayName: Publish Test Results **/*.trx
+    condition: always()
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      testRunTitle: 'Agent Tests - ${{ parameters.testLogTitle }}'
 
-# Upload test log
-- task: PublishBuildArtifacts@1
-  displayName: Publish Test logs
-  condition: always()
-  inputs:
-    pathToPublish: src/Test/TestLogs
-    artifactName: ${{ parameters.testLogTitle }}-$(System.JobId)
-    artifactType: container
+  # Upload test log
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Test logs
+    condition: always()
+    inputs:
+      pathToPublish: src/Test/TestLogs
+      artifactName: ${{ parameters.testLogTitle }}-$(System.JobId)
+      artifactType: container

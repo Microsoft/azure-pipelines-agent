@@ -10,7 +10,6 @@ resources:
   containers:
   - container: dotnetcore_arm
     image: azpagentinfra/arm:latest
-
   - container: dotnetcore_centos6
     image: azpagentinfra/centos6:latest
 
@@ -249,3 +248,84 @@ jobs:
       pathToPublish: _package
       artifactName: agent
       artifactType: container
+
+################################################################################
+- job: build_linux_arm_on_x64_agent
+################################################################################
+  displayName: Linux Agent (ARM on x64 EXPERIMENTAL)
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+
+  # Steps template for non-windows platform
+  - template: .vsts.template.nonwindows.yml
+    parameters:
+      componentDetection: 'true'
+      testLogTitle: 'Linux-ARM-on-x64'
+      targetRuntime: 'linux-arm'
+      skipTests: 'true'
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Layout Directory
+    condition: succeeded()
+    inputs:
+      pathToPublish: _layout
+      artifactName: _layout-linux-arm-$(System.BuildId)
+      artifactType: container
+
+################################################################################
+- job: test_linux_arm_built_on_x64_agent
+################################################################################
+  displayName: Linux Agent (Testing ARM Built On x64 EXPERIMENTAL)
+  dependsOn: build_linux_arm_on_x64_agent
+  pool:
+    name: buildDevs
+    demands: 'Agent.OSArchitecture -equals ARM'
+  container: dotnetcore_arm
+  timeoutInMinutes: 75
+  steps:
+
+  - task: DownloadBuildArtifacts@0
+    displayName: Download Layout Directory
+    inputs:
+      downloadPath: _layout
+      artifactName: _layout-linux-arm-$(System.BuildId)
+
+  # Run test
+  - script: ./dev.sh test
+    workingDirectory: src
+    displayName: Test
+
+  # Publish test results
+  - task: PublishTestResults@2
+    displayName: Publish Test Results **/*.trx
+    condition: always()
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      testRunTitle: 'Agent Tests - ARM-BuiltOn-x64'
+
+  # Upload test log
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Test logs
+    condition: always()
+    inputs:
+      pathToPublish: src/Test/TestLogs
+      artifactName: ARM-BuiltOn-x64-$(System.JobId)
+      artifactType: container
+
+
+  # # Create agent package zip
+  # - script: ./dev.sh package Release
+  #   workingDirectory: src
+  #   displayName: Package Release
+  #   condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
+
+  # # Upload agent package zip as build artifact
+  # - task: PublishBuildArtifacts@1
+  #   displayName: Publish Artifact (Linux x64)
+  #   condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
+  #   inputs:
+  #     pathToPublish: _package
+  #     artifactName: agent
+  #     artifactType: container
