@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Agent.Plugins.Log.TestResultParser.Contracts;
 using Agent.Sdk;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Log.TestFilePublisher
 {
@@ -34,6 +35,7 @@ namespace Agent.Plugins.Log.TestFilePublisher
         /// <inheritdoc />
         public async Task<bool> InitializeAsync(IAgentLogPluginContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             try
             {
                 _logger = _logger ?? new TraceLogger(context);

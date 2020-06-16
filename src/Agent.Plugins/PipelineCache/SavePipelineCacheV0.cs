@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.PipelineCache.WebApi;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.PipelineCache
 {
@@ -19,6 +20,7 @@ namespace Agent.Plugins.PipelineCache
            Hence we are overriding the RunAsync function to include that logic. */
         public override async Task RunAsync(AgentTaskPluginExecutionContext context, CancellationToken token)
         {
+            ArgUtil.NotNull(context, nameof(context));
             bool successSoFar = false;
             if (context.Variables.TryGetValue("agent.jobstatus", out VariableValue jobStatusVar))
             {
@@ -62,6 +64,8 @@ namespace Agent.Plugins.PipelineCache
             string path,
             CancellationToken token)
         {
+            ArgUtil.NotNull(context, nameof(context));
+            ArgUtil.NotNull(fingerprint, nameof(fingerprint));
             string contentFormatValue  = context.Variables.GetValueOrDefault(ContentFormatVariableName)?.Value ?? string.Empty;
             string calculatedFingerPrint = context.TaskVariables.GetValueOrDefault(ResolvedFingerPrintVariableName)?.Value ?? string.Empty;
 
@@ -70,7 +74,7 @@ namespace Agent.Plugins.PipelineCache
                 context.Warning($"The given cache key has changed in its resolved value between restore and save steps;\n"+
                                 $"original key: {calculatedFingerPrint}\n"+
                                 $"modified key: {fingerprint}\n");
-            } 
+            }
 
             ContentFormat contentFormat;
             if (string.IsNullOrWhiteSpace(contentFormatValue))
@@ -85,7 +89,7 @@ namespace Agent.Plugins.PipelineCache
             PipelineCacheServer server = new PipelineCacheServer();
             await server.UploadAsync(
                 context,
-                fingerprint, 
+                fingerprint,
                 path,
                 token,
                 contentFormat);

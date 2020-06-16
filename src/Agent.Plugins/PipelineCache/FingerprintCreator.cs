@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 [assembly: InternalsVisibleTo("Test")]
 
@@ -49,7 +50,7 @@ namespace Agent.Plugins.PipelineCache
         {
             if (keySegment.First() == ForceStringLiteral && keySegment.Last() == ForceStringLiteral) return false;
             if (keySegment.Any(c => !IsPathyChar(c))) return false;
-            if (!keySegment.Contains(".") && 
+            if (!keySegment.Contains(".") &&
                 !keySegment.Contains(Path.DirectorySeparatorChar) &&
                 !keySegment.Contains(Path.AltDirectorySeparatorChar)) return false;
             if (keySegment.Last() == '.') return false;
@@ -88,7 +89,7 @@ namespace Agent.Plugins.PipelineCache
         {
             Func<string,bool>[] includeFilters = includeRules.Select(includeRule =>
                 CreateMinimatchFilter(context, includeRule, invert: false)).ToArray();
-            Func<string,bool>[] excludeFilters = excludeRules.Select(excludeRule => 
+            Func<string,bool>[] excludeFilters = excludeRules.Select(excludeRule =>
                 CreateMinimatchFilter(context, excludeRule, invert: true)).ToArray();
             Func<string,bool> filter = (path) => includeFilters.Any(f => f(path)) && excludeFilters.All(f => f(path));
             return filter;
@@ -109,10 +110,10 @@ namespace Agent.Plugins.PipelineCache
             {
                 this.DisplayPath = displayPath;
                 this.FileLength = fileLength;
-                this.Hash = hash;    
+                this.Hash = hash;
             }
 
-            public MatchedFile(string displayPath, FileStream fs): 
+            public MatchedFile(string displayPath, FileStream fs):
                 this(displayPath, fs.Length, s_sha256.ComputeHash(fs).ToHex())
             {
             }
@@ -125,7 +126,7 @@ namespace Agent.Plugins.PipelineCache
                 return MatchedFile.GenerateHash(new [] { this });
             }
 
-            public static string GenerateHash(IEnumerable<MatchedFile> matches) {                
+            public static string GenerateHash(IEnumerable<MatchedFile> matches) {
                 string s = matches.Aggregate(new StringBuilder(),
                         (sb, file) => sb.Append($"\nSHA256({file.DisplayPath})=[{file.FileLength}]{file.Hash}"),
                         sb => sb.ToString());
@@ -142,9 +143,9 @@ namespace Agent.Plugins.PipelineCache
         }
 
         // Given a globby path, figure out where to start enumerating.
-        // Room for optimization here e.g. 
-        // includeGlobPath = /dir/*foo* 
-        // should map to 
+        // Room for optimization here e.g.
+        // includeGlobPath = /dir/*foo*
+        // should map to
         // enumerateRootPath = /dir/
         // enumeratePattern = *foo*
         // enumerateDepth = SearchOption.TopDirectoryOnly
@@ -201,6 +202,8 @@ namespace Agent.Plugins.PipelineCache
             string filePathRoot,
             IEnumerable<string> keySegments)
         {
+            ArgUtil.NotNull(context, nameof(context));
+            ArgUtil.NotNull(keySegments, nameof(keySegments));
             // Quickly validate all segments
             foreach (string keySegment in keySegments)
             {
@@ -235,7 +238,7 @@ namespace Agent.Plugins.PipelineCache
                 else
                 {
                     var matches = (details as MatchedFile[]) ?? new MatchedFile[0];
-                    
+
                     if (type == KeySegmentType.FilePath)
                     {
                         string fileHash = matches.Length > 0 ? matches[0].Hash : null;
@@ -252,9 +255,9 @@ namespace Agent.Plugins.PipelineCache
                                 context.Output($"   - {FormatForDisplay(match.DisplayPath, filePathDisplayLength)} --> {match.Hash}");
                             }
                         }
-                    }   
+                    }
                 }
-            };    
+            };
 
             foreach (string keySegment in keySegments)
             {
@@ -282,7 +285,7 @@ namespace Agent.Plugins.PipelineCache
                         List<string> globs;
                         if(!enumerations.TryGetValue(enumeration, out globs))
                         {
-                            enumerations[enumeration] = globs = new List<string>(); 
+                            enumerations[enumeration] = globs = new List<string>();
                         }
                         globs.Add(absoluteRootRule);
                     }
@@ -324,7 +327,7 @@ namespace Agent.Plugins.PipelineCache
                         displayKeySegment = context.Container.TranslateToContainerPath(displayKeySegment);
                     }
 
-                    LogKeySegment(displayKeySegment, 
+                    LogKeySegment(displayKeySegment,
                         patternSegment ? KeySegmentType.FilePattern : KeySegmentType.FilePath,
                         matchedFiles.Values.ToArray());
 
@@ -339,9 +342,9 @@ namespace Agent.Plugins.PipelineCache
                             exceptions.Add(new FileNotFoundException($"File not found: {displayKeySegment}"));
                         }
                     }
-                
+
                     resolvedSegments.Add(MatchedFile.GenerateHash(matchedFiles.Values));
-                }                 
+                }
             }
 
             if (exceptions.Any())

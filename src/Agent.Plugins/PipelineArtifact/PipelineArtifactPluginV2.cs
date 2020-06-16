@@ -54,7 +54,7 @@ namespace Agent.Plugins.PipelineArtifact
         }
     }
 
-    // Can be invoked from a build run or a release run should a build be set as the artifact. 
+    // Can be invoked from a build run or a release run should a build be set as the artifact.
     public class DownloadPipelineArtifactTaskV2_0_0 : PipelineArtifactTaskPluginBaseV2
     {
         // Same as https://github.com/Microsoft/vsts-tasks/blob/master/Tasks/DownloadPipelineArtifactV1/task.json
@@ -89,7 +89,7 @@ namespace Agent.Plugins.PipelineArtifact
             targetPath = Path.IsPathFullyQualified(targetPath) ? targetPath : Path.GetFullPath(Path.Combine(defaultWorkingDirectory, targetPath));
 
             bool onPrem = !String.Equals(context.Variables.GetValueOrDefault(WellKnownDistributedTaskVariables.ServerType)?.Value, "Hosted", StringComparison.OrdinalIgnoreCase);
-            
+
             if (onPrem)
             {
                 throw new InvalidOperationException(StringUtil.Loc("OnPremIsNotSupported"));
@@ -131,7 +131,7 @@ namespace Agent.Plugins.PipelineArtifact
                 {
                     throw new ArgumentNullException(StringUtil.Loc("CannotBeNullOrEmpty"), "Project ID");
                 }
-                
+
                 Guid projectId = Guid.Parse(projectIdStr);
                 ArgUtil.NotEmpty(projectId, nameof(projectId));
 
@@ -176,9 +176,9 @@ namespace Agent.Plugins.PipelineArtifact
                 {
                     throw new ArgumentNullException(StringUtil.Loc("CannotBeNullOrEmpty"), "Project Name");
                 }
-                Guid projectId; 
+                Guid projectId;
                 bool isProjGuid = Guid.TryParse(projectName, out projectId);
-                if (!isProjGuid) 
+                if (!isProjGuid)
                 {
                     projectId = await GetProjectIdAsync(context, projectName);
                 }
@@ -258,6 +258,7 @@ namespace Agent.Plugins.PipelineArtifact
 
         protected virtual string GetArtifactName(AgentTaskPluginExecutionContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             return context.GetInput(ArtifactEventProperties.ArtifactName, required: true);
         }
 
@@ -274,7 +275,7 @@ namespace Agent.Plugins.PipelineArtifact
 
         private async Task<int> GetPipelineIdAsync(AgentTaskPluginExecutionContext context, string pipelineDefinition, string pipelineVersionToDownload, string project, string[] tagFilters, BuildResult resultFilter = BuildResult.Succeeded, string branchName = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if(String.IsNullOrWhiteSpace(pipelineDefinition)) 
+            if(String.IsNullOrWhiteSpace(pipelineDefinition))
             {
                 throw new InvalidOperationException(StringUtil.Loc("CannotBeNullOrEmpty", "Pipeline Definition"));
             }
@@ -283,7 +284,7 @@ namespace Agent.Plugins.PipelineArtifact
             BuildHttpClient buildHttpClient = connection.GetClient<BuildHttpClient>();
 
             var isDefinitionNum = Int32.TryParse(pipelineDefinition, out int definition);
-            if(!isDefinitionNum) 
+            if(!isDefinitionNum)
             {
                 definition = (await buildHttpClient.GetDefinitionsAsync(new System.Guid(project), pipelineDefinition, cancellationToken: cancellationToken)).FirstOrDefault().Id;
             }
@@ -329,7 +330,7 @@ namespace Agent.Plugins.PipelineArtifact
 
             return result;
         }
-      
+
         private async Task<Guid> GetProjectIdAsync(AgentTaskPluginExecutionContext context, string projectName)
         {
             VssConnection connection = context.VssConnection;

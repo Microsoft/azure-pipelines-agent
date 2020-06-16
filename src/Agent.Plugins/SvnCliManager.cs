@@ -253,6 +253,7 @@ namespace Agent.Plugins.Repository
         /// <returns></returns>
         public string ResolveServerPath(string serverPath, string rootPath)
         {
+            ArgUtil.NotNull(serverPath, nameof(serverPath));
             ArgUtil.Equal(true, serverPath.StartsWith(@"^/"), nameof(serverPath));
 
             foreach (string workingDirectoryPath in GetSvnWorkingCopyPaths(rootPath))
@@ -671,6 +672,7 @@ namespace Agent.Plugins.Repository
         /// <returns></returns>
         public Dictionary<string, SvnMappingDetails> NormalizeMappings(List<SvnMappingDetails> allMappings)
         {
+            ArgUtil.NotNull(allMappings, nameof(allMappings));
             // We use Ordinal comparer because SVN is case sensetive and keys in the dictionary are URLs.
             Dictionary<string, SvnMappingDetails> distinctMappings = new Dictionary<string, SvnMappingDetails>(StringComparer.Ordinal);
             HashSet<string> localPaths = new HashSet<string>(StringComparer.Ordinal);

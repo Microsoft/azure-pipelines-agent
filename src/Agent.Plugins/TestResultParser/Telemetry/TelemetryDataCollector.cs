@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Agent.Plugins.Log.TestResultParser.Contracts;
 using Microsoft.VisualStudio.Services.CustomerIntelligence.WebApi;
 using Microsoft.VisualStudio.Services.WebPlatform;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Log.TestResultParser.Plugin
 {
@@ -28,6 +29,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
 
         public TelemetryDataCollector(IClientFactory clientFactory, ITraceLogger logger)
         {
+            ArgUtil.NotNull(clientFactory, nameof(clientFactory));
             _logger = logger;
             _httpClient = clientFactory.GetClient<CustomerIntelligenceHttpClient>();
         }

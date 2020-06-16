@@ -25,9 +25,9 @@ namespace Agent.Plugins.PipelineCache.Telemetry
             baseAddress: baseAddress,
             eventNamePrefix: eventNamePrefix,
             eventNameSuffix: eventNameSuffix,
-            planId: Guid.Parse(context.Variables["system.planId"].Value),
-            jobId: Guid.Parse(context.Variables["system.jobId"].Value),
-            taskInstanceId: Guid.Parse(context.Variables["system.taskInstanceId"].Value),
+            planId: Guid.Parse(context?.Variables["system.planId"].Value),
+            jobId: Guid.Parse(context?.Variables["system.jobId"].Value),
+            taskInstanceId: Guid.Parse(context?.Variables["system.taskInstanceId"].Value),
             attemptNumber: attemptNumber)
         {
         }

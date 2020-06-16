@@ -438,6 +438,8 @@ namespace Agent.Plugins.Repository
 
         public async Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
+            ArgUtil.NotNull(repository, nameof(repository));
             bool undoShelvesetPendingChanges = StringUtil.ConvertToBoolean(executionContext.TaskVariables.GetValueOrDefault("UndoShelvesetPendingChanges")?.Value);
             if (undoShelvesetPendingChanges)
             {
@@ -454,7 +456,7 @@ namespace Agent.Plugins.Repository
                 {
                     tf = new TeeCliManager();
                 }
-                
+
                 tf.CancellationToken = CancellationToken.None;
                 tf.Repository = repository;
                 tf.ExecutionContext = executionContext;
@@ -599,6 +601,7 @@ namespace Agent.Plugins.Repository
                 DefinitionWorkspaceMapping[] definitionMappings,
                 string sourcesDirectory)
             {
+                ArgUtil.NotNull(executionContext, nameof(executionContext));
                 ArgUtil.NotNullOrEmpty(name, nameof(name));
                 ArgUtil.NotNullOrEmpty(sourcesDirectory, nameof(sourcesDirectory));
 

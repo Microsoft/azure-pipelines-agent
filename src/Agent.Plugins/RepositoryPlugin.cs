@@ -53,6 +53,8 @@ namespace Agent.Plugins.Repository
 
         protected void MergeCheckoutOptions(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
+            ArgUtil.NotNull(repository, nameof(repository));
             // Merge the repository checkout options
             if ((!executionContext.Variables.TryGetValue("MERGE_CHECKOUT_OPTIONS", out VariableValue mergeCheckoutOptions) || !String.Equals(mergeCheckoutOptions.Value, "false", StringComparison.OrdinalIgnoreCase)) &&
                 repository.Properties.Get<JToken>(Pipelines.RepositoryPropertyNames.CheckoutOptions) is JObject checkoutOptions)
@@ -107,6 +109,7 @@ namespace Agent.Plugins.Repository
 
         public override async Task RunAsync(AgentTaskPluginExecutionContext executionContext, CancellationToken token)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
             var sourceSkipVar = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.source.skip")?.Value) ||
                                 !StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("build.syncSources")?.Value ?? bool.TrueString);
             if (sourceSkipVar)
@@ -195,6 +198,7 @@ namespace Agent.Plugins.Repository
 
         public override async Task RunAsync(AgentTaskPluginExecutionContext executionContext, CancellationToken token)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
             var repoAlias = executionContext.TaskVariables.GetValueOrDefault("repository")?.Value;
             if (!string.IsNullOrEmpty(repoAlias))
             {

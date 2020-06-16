@@ -18,6 +18,7 @@ namespace Agent.Plugins.PipelineArtifact
 
         public BuildServer(VssConnection connection)
         {
+            ArgUtil.NotNull(connection, nameof(connection));
             connection.Settings.SendTimeout = TimeSpan.FromSeconds(300);
             ArgUtil.NotNull(connection, nameof(connection));
             _buildHttpClient = connection.GetClient<BuildHttpClient>();

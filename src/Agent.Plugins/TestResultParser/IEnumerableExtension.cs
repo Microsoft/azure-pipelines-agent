@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Log.TestResultParser.Plugin
 {
@@ -10,6 +11,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
     {
         public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size)
         {
+            ArgUtil.NotNull(source, nameof(source));
             TSource[] bucket = null;
             var count = 0;
 

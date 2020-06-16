@@ -13,6 +13,7 @@ using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.BlobStore.Common;
 using Microsoft.VisualStudio.Services.BlobStore.WebApi;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.PipelineCache
 {
@@ -32,6 +33,7 @@ namespace Agent.Plugins.PipelineCache
             string inputPath,
             CancellationToken cancellationToken)
         {
+            ArgUtil.NotNull(context, nameof(context));
             if(File.Exists(inputPath))
             {
                 throw new DirectoryNotFoundException($"Please specify path to a directory, File path is not allowed. {inputPath} is a file.");
@@ -63,7 +65,7 @@ namespace Agent.Plugins.PipelineCache
         /// starting the download through a Task and starting the TAR/7z process which is reading from STDIN.
         /// </summary>
         /// <remarks>
-        /// Windows will use 7z to extract the TAR file (only if 7z is installed on the machine and is part of PATH variables). 
+        /// Windows will use 7z to extract the TAR file (only if 7z is installed on the machine and is part of PATH variables).
         /// Non-Windows machines will extract TAR file using the 'tar' command'.
         /// </remarks>
         public static Task DownloadAndExtractTarAsync(
@@ -73,11 +75,12 @@ namespace Agent.Plugins.PipelineCache
             string targetDirectory,
             CancellationToken cancellationToken)
         {
+            ArgUtil.NotNull(context, nameof(context));
             ValidateTarManifest(manifest);
 
             Directory.CreateDirectory(targetDirectory);
-            
-            DedupIdentifier dedupId = DedupIdentifier.Create(manifest.Items.Single(i => i.Path.EndsWith(archive, StringComparison.OrdinalIgnoreCase)).Blob.Id);          
+
+            DedupIdentifier dedupId = DedupIdentifier.Create(manifest.Items.Single(i => i.Path.EndsWith(archive, StringComparison.OrdinalIgnoreCase)).Blob.Id);
 
             ProcessStartInfo processStartInfo = GetExtractStartProcessInfo(context, targetDirectory);
 
@@ -179,14 +182,14 @@ namespace Agent.Plugins.PipelineCache
             {
                 processArguments = "-h " + processArguments;
             }
-            
+
             ProcessStartInfo processStartInfo = new ProcessStartInfo();
             CreateProcessStartInfo(processStartInfo, processFileName, processArguments, processWorkingDirectory: Path.GetTempPath()); // We want to create the archiveFile in temp folder, and hence starting the tar process from TEMP to avoid absolute paths in tar cmd line.
             return processStartInfo;
         }
 
         private static string GetTar(AgentTaskPluginExecutionContext context)
-        {   
+        {
             // check if the user specified the tar executable to use:
             string location = Environment.GetEnvironmentVariable(TarLocationEnvironmentVariableName);
             return String.IsNullOrWhiteSpace(location) ? "tar"  : location;
@@ -236,7 +239,7 @@ namespace Agent.Plugins.PipelineCache
                     File.Delete(fileName);
                 }
             }
-            catch {}        
+            catch {}
         }
 
         private static string CreateArchiveFileName()

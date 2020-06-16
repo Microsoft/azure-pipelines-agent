@@ -68,6 +68,7 @@ namespace Agent.Plugins.PipelineArtifact
             AgentTaskPluginExecutionContext context,
             CancellationToken token)
         {
+            ArgUtil.NotNull(context, nameof(context));
             string artifactName = context.GetInput(ArtifactEventProperties.ArtifactName, required: false);
             if (string.IsNullOrEmpty(artifactName))
             {
@@ -327,6 +328,7 @@ namespace Agent.Plugins.PipelineArtifact
 
         protected virtual string GetArtifactName(AgentTaskPluginExecutionContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             return context.GetInput(ArtifactEventProperties.ArtifactName, required: true);
         }
 
@@ -378,6 +380,7 @@ namespace Agent.Plugins.PipelineArtifact
 
         protected override string GetArtifactName(AgentTaskPluginExecutionContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             return context.GetInput(ArtifactEventProperties.ArtifactName, required: false);
         }
     }
@@ -386,6 +389,7 @@ namespace Agent.Plugins.PipelineArtifact
     {
         protected override string GetArtifactName(AgentTaskPluginExecutionContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             return context.GetInput(ArtifactEventProperties.ArtifactName, required: false);
         }
     }

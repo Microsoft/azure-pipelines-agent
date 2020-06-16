@@ -12,6 +12,11 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
         /// </summary>
         public string ProcessData(string data)
         {
+            if (data == null)
+            {
+                return null;
+            }
+
             if (data.StartsWith(debugLogPrefix))
             {
                 return null;

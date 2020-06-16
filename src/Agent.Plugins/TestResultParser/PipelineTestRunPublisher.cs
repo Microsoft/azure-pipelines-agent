@@ -10,6 +10,7 @@ using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.TestResults.WebApi;
 using TestOutcome = Microsoft.TeamFoundation.TestManagement.WebApi.TestOutcome;
 using TestRun = Agent.Plugins.Log.TestResultParser.Contracts.TestRun;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Log.TestResultParser.Plugin
 {
@@ -17,6 +18,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
     {
         public PipelineTestRunPublisher(IClientFactory clientFactory, IPipelineConfig pipelineConfig, ITraceLogger logger, ITelemetryDataCollector telemetry)
         {
+            ArgUtil.NotNull(clientFactory, nameof(clientFactory));
             _logger = logger;
             _telemetry = telemetry;
             _pipelineConfig = pipelineConfig;
@@ -26,6 +28,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
         /// <inheritdoc />
         public async Task<TestRun> PublishAsync(TestRun testRun)
         {
+            ArgUtil.NotNull(testRun, nameof(testRun));
             using (var timer = new SimpleTimer("PublishTestRun", _logger,
                 new TelemetryDataWrapper(_telemetry, TelemetryConstants.PipelineTestRunPublisherEventArea, TelemetryConstants.PublishTestRun),
                 TimeSpan.FromMilliseconds(int.MaxValue)))

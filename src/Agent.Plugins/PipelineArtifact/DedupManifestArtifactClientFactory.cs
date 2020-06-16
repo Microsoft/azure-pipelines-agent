@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Content.Common;
 using Microsoft.VisualStudio.Services.BlobStore.Common.Telemetry;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.PipelineArtifact
 {
@@ -22,12 +23,14 @@ namespace Agent.Plugins.PipelineArtifact
     {
         public static readonly DedupManifestArtifactClientFactory Instance = new DedupManifestArtifactClientFactory();
 
-        private DedupManifestArtifactClientFactory() 
+        private DedupManifestArtifactClientFactory()
         {
         }
-        
+
         public DedupManifestArtifactClient CreateDedupManifestClient(AgentTaskPluginExecutionContext context, VssConnection connection, CancellationToken cancellationToken, out BlobStoreClientTelemetry telemetry)
         {
+            ArgUtil.NotNull(context, nameof(context));
+            ArgUtil.NotNull(connection, nameof(connection));
             var tracer = new CallbackAppTraceSource(str => context.Output(str), SourceLevels.Information);
 
             ArtifactHttpClientFactory factory = new ArtifactHttpClientFactory(
@@ -37,7 +40,7 @@ namespace Agent.Plugins.PipelineArtifact
                 cancellationToken);
 
             var dedupStoreHttpClient = factory.CreateVssHttpClient<IDedupStoreHttpClient, DedupStoreHttpClient>(connection.GetClient<DedupStoreHttpClient>().BaseAddress);
-            
+
             var client = new DedupStoreClientWithDataport(dedupStoreHttpClient, PipelineArtifactProvider.GetDedupStoreClientMaxParallelism(context));
             return new DedupManifestArtifactClient(telemetry = new BlobStoreClientTelemetry(tracer, dedupStoreHttpClient.BaseAddress), client, tracer);
         }

@@ -3,6 +3,8 @@
 
 using Agent.Plugins.Log.TestResultParser.Contracts;
 using Agent.Sdk;
+using Microsoft.VisualStudio.Services.Agent.Util;
+
 
 namespace Agent.Plugins.Log.TestResultParser.Plugin
 {
@@ -10,6 +12,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
     {
         public TraceLogger(IAgentLogPluginContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             _context = context;
 
             _context.Variables.TryGetValue("system.debug", out var systemDebug);

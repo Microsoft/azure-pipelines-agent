@@ -42,6 +42,8 @@ namespace Agent.Plugins.Repository
 
         public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, GitCliManager gitCommandManager)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
+            ArgUtil.NotNull(gitCommandManager, nameof(gitCommandManager));
             // check git version for SChannel SSLBackend (Windows Only)
             bool schannelSslBackend = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.gituseschannel")?.Value);
             if (schannelSslBackend && PlatformUtil.RunningOnWindows)
@@ -55,18 +57,22 @@ namespace Agent.Plugins.Repository
     {
         public override bool GitSupportUseAuthHeader(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager)
         {
+            ArgUtil.NotNull(gitCommandManager, nameof(gitCommandManager));
             // v2.9 git exist use auth header.
             return gitCommandManager.EnsureGitVersion(_minGitVersionSupportAuthHeader, throwOnNotMatch: false);
         }
 
         public override bool GitLfsSupportUseAuthHeader(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager)
         {
+            ArgUtil.NotNull(gitCommandManager, nameof(gitCommandManager));
             // v2.1 git-lfs exist use auth header.
             return gitCommandManager.EnsureGitLFSVersion(_minGitLfsVersionSupportAuthHeader, throwOnNotMatch: false);
         }
 
         public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, GitCliManager gitCommandManager)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
+            ArgUtil.NotNull(gitCommandManager, nameof(gitCommandManager));
             // check git version for SChannel SSLBackend (Windows Only)
             bool schannelSslBackend = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.gituseschannel")?.Value);
             if (schannelSslBackend && PlatformUtil.RunningOnWindows)
@@ -115,12 +121,14 @@ namespace Agent.Plugins.Repository
 
         public override bool GitSupportUseAuthHeader(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager)
         {
+            ArgUtil.NotNull(gitCommandManager, nameof(gitCommandManager));
             // v2.9 git exist use auth header for tfsgit repository.
             return gitCommandManager.EnsureGitVersion(_minGitVersionSupportAuthHeader, throwOnNotMatch: false);
         }
 
         public override bool GitLfsSupportUseAuthHeader(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager)
         {
+            ArgUtil.NotNull(gitCommandManager, nameof(gitCommandManager));
             // v2.1 git-lfs exist use auth header for github repository.
             return gitCommandManager.EnsureGitLFSVersion(_minGitLfsVersionSupportAuthHeader, throwOnNotMatch: false);
         }
@@ -130,6 +138,8 @@ namespace Agent.Plugins.Repository
         // we have to use http.extraheader option to provide auth header for on-prem tfs git
         public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, GitCliManager gitCommandManager)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
+            ArgUtil.NotNull(gitCommandManager, nameof(gitCommandManager));
             var selfManageGitCreds = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("system.selfmanagegitcreds")?.Value);
             if (selfManageGitCreds)
             {
@@ -199,6 +209,7 @@ namespace Agent.Plugins.Repository
 
         public string GenerateAuthHeader(AgentTaskPluginExecutionContext executionContext, string username, string password, bool isBearer)
         {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
             if (isBearer)
             {
                 // tfsgit use bearer auth header with JWToken from systemconnection.

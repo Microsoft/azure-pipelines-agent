@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Agent.Plugins.Log.TestResultParser.Contracts;
 using Agent.Sdk;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Log.TestResultParser.Plugin
 {
@@ -34,6 +35,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
         /// <inheritdoc />
         public async Task<bool> InitializeAsync(IAgentLogPluginContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             try
             {
                 _logger = _logger ?? new TraceLogger(context);
@@ -48,7 +50,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
                     await _telemetry.PublishCumulativeTelemetryAsync();
                     return false; // disable the plugin
                 }
-                
+
                 await _inputDataParser.InitializeAsync(_clientFactory, _pipelineConfig, _logger, _telemetry);
                 _telemetry.AddOrUpdate(TelemetryConstants.PluginInitialized, true);
             }

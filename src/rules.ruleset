@@ -42,7 +42,7 @@
       <Rule Id="CA1058" Action="Error" />            <!-- Types should not extend certain base types -->
       <Rule Id="CA1060" Action="Warning" />          <!-- Move pinvokes to native methods class -->
       <Rule Id="CA1061" Action="Error" />            <!-- Do not hide base class methods -->
-      <Rule Id="CA1062" Action="Warning" />          <!-- Validate arguments of public methods --> <!-- PARTIALLY COMPLETE -->
+      <Rule Id="CA1062" Action="Error" />            <!-- Validate arguments of public methods -->
       <Rule Id="CA1063" Action="Error" />            <!-- Implement IDisposable Correctly -->
       <Rule Id="CA1064" Action="Error" />            <!-- Exceptions should be public -->
       <Rule Id="CA1065" Action="Warning" />          <!-- Do not raise exceptions in unexpected locations -->

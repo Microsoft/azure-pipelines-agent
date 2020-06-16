@@ -50,6 +50,7 @@ namespace Agent.Plugins.PipelineArtifact
 
         protected virtual string GetArtifactName(AgentTaskPluginExecutionContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             return context.GetInput(ArtifactEventProperties.ArtifactName, required: true);
         }
     }
@@ -69,6 +70,7 @@ namespace Agent.Plugins.PipelineArtifact
             string targetPath,
             CancellationToken token)
         {
+            ArgUtil.NotNull(context, nameof(context));
             string artifactName = this.GetArtifactName(context);
 
             if (String.IsNullOrWhiteSpace(artifactName))
@@ -132,6 +134,7 @@ namespace Agent.Plugins.PipelineArtifact
             string targetPath,
             CancellationToken token)
         {
+            ArgUtil.NotNull(context, nameof(context));
             string artifactName = this.GetArtifactName(context);
 
             // Create target directory if absent
@@ -197,6 +200,7 @@ namespace Agent.Plugins.PipelineArtifact
     {
         protected override string GetArtifactName(AgentTaskPluginExecutionContext context)
         {
+            ArgUtil.NotNull(context, nameof(context));
             return context.GetInput(ArtifactEventProperties.ArtifactName, required: false);
         }
     }

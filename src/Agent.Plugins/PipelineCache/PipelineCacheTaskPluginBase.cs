@@ -42,15 +42,15 @@ namespace Agent.Plugins.PipelineCache
                 return segments.ToArray();
             };
 
-            Func<string,string[]> splitAcrossNewlines = (s) => 
+            Func<string,string[]> splitAcrossNewlines = (s) =>
                 s.Replace("\r\n", "\n") //normalize newlines
                  .Split(new [] {'\n'}, StringSplitOptions.RemoveEmptyEntries)
                  .Select(line => line.Trim())
                  .ToArray();
-            
+
             string[] keySegments;
             bool isOldFormat = key.Contains('\n');
-            
+
             IEnumerable<string[]> restoreKeys;
             bool hasRestoreKeys = !string.IsNullOrWhiteSpace(restoreKeysBlock);
 
@@ -58,7 +58,7 @@ namespace Agent.Plugins.PipelineCache
             {
                 throw new ArgumentException(OldKeyFormatMessage);
             }
-            
+
             if (isOldFormat)
             {
                 keySegments = splitAcrossNewlines(key);
@@ -67,7 +67,7 @@ namespace Agent.Plugins.PipelineCache
             {
                 keySegments = splitAcrossPipes(key);
             }
-            
+
 
             if (hasRestoreKeys)
             {
@@ -80,7 +80,7 @@ namespace Agent.Plugins.PipelineCache
 
             return (isOldFormat, keySegments, restoreKeys);
         }
-        
+
         public async virtual Task RunAsync(AgentTaskPluginExecutionContext context, CancellationToken token)
         {
             ArgUtil.NotNull(context, nameof(context));
@@ -98,14 +98,15 @@ namespace Agent.Plugins.PipelineCache
 
             if (isOldFormat)
             {
+                ArgUtil.NotNull(context, nameof(context));
                 context.Warning(OldKeyFormatMessage);
             }
-
+            ArgUtil.NotNull(context, nameof(context));
             context.Output("Resolving key:");
             Fingerprint keyFp = FingerprintCreator.EvaluateKeyToFingerprint(context, workspaceRoot, keySegments);
             context.Output($"Resolved to: {keyFp}");
 
-            Func<Fingerprint[]> restoreKeysGenerator = () => 
+            Func<Fingerprint[]> restoreKeysGenerator = () =>
                 restoreKeys.Select(restoreKey => {
                     context.Output("Resolving restore key:");
                     Fingerprint f = FingerprintCreator.EvaluateKeyToFingerprint(context, workspaceRoot, restoreKey);
