@@ -155,6 +155,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             {
                 case PlatformUtil.OS.OSX:
                 case PlatformUtil.OS.Linux:
+                case PlatformUtil.OS.FreeBSD:
                     // Write the section header.
                     WriteSection(StringUtil.Loc("EulasSectionHeader"));
 
@@ -388,6 +389,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 {
                     case PlatformUtil.OS.OSX:
                     case PlatformUtil.OS.Linux:
+                    case PlatformUtil.OS.FreeBSD:
                         // Save the provided admin cred for compat with previous agent.
                         _store.SaveCredential(credProvider.CredentialData);
                         break;
@@ -488,6 +490,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 var serviceControlManager = HostContext.GetService<ILinuxServiceControlManager>();
                 serviceControlManager.GenerateScripts(agentSettings);
             }
+            else if (PlatformUtil.RunningOnFreeBSD)
+            {
+                // generate service config script for FreeBSD
+                var serviceControlManager = HostContext.GetService<IFreeBSDServiceControlManager>();
+                serviceControlManager.GenerateScripts(agentSettings);
+            }
             else if (PlatformUtil.RunningOnMacOS)
             {
                 // generate service config script for macOS
@@ -516,7 +524,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     else if (PlatformUtil.RunningOnLinux)
                     {
                         // unconfig systemd service first
-                        throw new InvalidOperationException(StringUtil.Loc("UnconfigureServiceDService"));
+                        throw new InvalidOperationException(StringUtil.Loc("UnconfigureSystemDService"));
+                    }
+                    else if (PlatformUtil.RunningOnFreeBSD)
+                    {
+                        // unconfig daemon service first
+                        throw new InvalidOperationException(StringUtil.Loc("UnconfigureDaemonService"));
                     }
                     else if (PlatformUtil.RunningOnMacOS)
                     {

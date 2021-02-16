@@ -673,6 +673,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Trait("Category", "Common")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public void GetRelativePathWindows()
         {
             using (TestHostContext hc = new TestHostContext(this))
@@ -784,6 +785,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Trait("Category", "Common")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public void ResolvePathWindows()
         {
             using (TestHostContext hc = new TestHostContext(this))

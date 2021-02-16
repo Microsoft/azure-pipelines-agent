@@ -35,6 +35,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 {
                     case PlatformUtil.OS.Linux:
                         return "Linux";
+                    case PlatformUtil.OS.FreeBSD:
+                        return "FreeBSD";
                     case PlatformUtil.OS.OSX:
                         return "Darwin";
                     case PlatformUtil.OS.Windows:

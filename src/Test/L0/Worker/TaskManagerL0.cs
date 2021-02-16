@@ -402,6 +402,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                     // Act/Assert.
                     Assert.False(data.PreferredOnPlatform(PlatformUtil.OS.Windows));
                     Assert.False(data.PreferredOnPlatform(PlatformUtil.OS.Linux));
+                    Assert.False(data.PreferredOnPlatform(PlatformUtil.OS.FreeBSD));
                     Assert.False(data.PreferredOnPlatform(PlatformUtil.OS.OSX));
                 }
             }
@@ -555,6 +556,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public void MatchesPlatform()
         {
             try
@@ -567,6 +569,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                     // Act/Assert.
                     Assert.True(data.PreferredOnPlatform(PlatformUtil.OS.Windows));
                     Assert.False(data.PreferredOnPlatform(PlatformUtil.OS.Linux));
+                    Assert.False(data.PreferredOnPlatform(PlatformUtil.OS.FreeBSD));
                     Assert.False(data.PreferredOnPlatform(PlatformUtil.OS.OSX));
                 }
             }

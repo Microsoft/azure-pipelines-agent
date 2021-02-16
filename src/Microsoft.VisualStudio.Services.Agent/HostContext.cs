@@ -396,7 +396,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                         {
                             platformTarget = arg.TypedValue.Value as Type;
                         }
-                        else if (PlatformUtil.RunningOnLinux
+                        else if ((PlatformUtil.RunningOnLinux || PlatformUtil.RunningOnFreeBSD)
                             && string.Equals(arg.MemberName, nameof(ServiceLocatorAttribute.PreferredOnLinux), StringComparison.Ordinal))
                         {
                             platformTarget = arg.TypedValue.Value as Type;

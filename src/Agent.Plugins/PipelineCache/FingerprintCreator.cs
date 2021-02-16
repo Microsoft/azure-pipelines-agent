@@ -21,7 +21,7 @@ namespace Agent.Plugins.PipelineCache
     public static class FingerprintCreator
     {
         private static readonly bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        private static readonly bool isCaseSensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        private static readonly bool isCaseSensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD);
 
         // https://github.com/Microsoft/azure-pipelines-task-lib/blob/master/node/docs/findingfiles.md#matchoptions
         private static readonly Options minimatchOptions = new Options

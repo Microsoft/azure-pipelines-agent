@@ -28,6 +28,9 @@
   <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">
     <OSPlatform>OS_LINUX</OSPlatform>
   </PropertyGroup>
+  <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::FreeBSD)))' == 'true'">
+    <OSPlatform>OS_FREEBSD</OSPlatform>
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(OSPlatform)' == 'OS_WINDOWS' AND '$(PROCESSOR_ARCHITECTURE)' == 'AMD64'">
     <OSArchitecture>X64</OSArchitecture>
@@ -40,7 +43,7 @@
     <OSArchitecture>X64</OSArchitecture>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(OSPlatform)' == 'OS_LINUX' AND '$(PackageRuntime)' == 'linux-x64'">
+  <PropertyGroup Condition="('$(OSPlatform)' == 'OS_LINUX' AND '$(PackageRuntime)' == 'linux-x64') OR ('$(OSPlatform)' == 'OS_FREEBSD' AND '$(PackageRuntime)' == 'freebsd-x64')">
     <OSArchitecture>X64</OSArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OSPlatform)' == 'OS_LINUX' AND '$(PackageRuntime)' == 'rhel.6-x64'">

@@ -43,6 +43,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
         [Trait("SkipOn", "windows")]
+        [Trait("SkipOn", "freebsd")]
         public async Task TestCancel()
         {
             const int SecondsToRun = 20;

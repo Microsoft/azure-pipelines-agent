@@ -19,8 +19,9 @@ namespace Agent.Sdk
         public enum OS
         {
             Linux,
+            FreeBSD,
             OSX,
-            Windows,
+            Windows
         }
 
         public static OS HostOS
@@ -31,6 +32,10 @@ namespace Agent.Sdk
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     return OS.Linux;
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                {
+                    return OS.FreeBSD;
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
@@ -58,6 +63,11 @@ namespace Agent.Sdk
         public static bool RunningOnLinux
         {
             get => PlatformUtil.HostOS == PlatformUtil.OS.Linux;
+        }
+
+        public static bool RunningOnFreeBSD
+        {
+            get => PlatformUtil.HostOS == PlatformUtil.OS.FreeBSD;
         }
 
         public static bool RunningOnRHEL6

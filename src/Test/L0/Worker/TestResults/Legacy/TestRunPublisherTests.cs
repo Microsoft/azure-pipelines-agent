@@ -185,7 +185,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             Assert.Equal("runName", _runContext.RunName);
         }
 
-#if OS_LINUX
+#if OS_LINUX || OS_FREEBSD
 	[Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "PublishTestResults")]

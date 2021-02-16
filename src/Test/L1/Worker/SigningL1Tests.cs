@@ -23,6 +23,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         // TODO: When NuGet works cross-platform, remove these traits. Also, package NuGet with the Agent.
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public async Task SignatureVerification_PassesWhenAllTasksAreSigned(bool useFingerprintList, bool useTopLevelFingerprint)
         {
             try
@@ -72,6 +73,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         // TODO: When NuGet works cross-platform, remove these traits. Also, package NuGet with the Agent.
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public async Task SignatureVerification_FailsWhenTasksArentSigned(bool useFingerprintList, bool useTopLevelFingerprint)
         {
             try
@@ -113,6 +115,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public async Task SignatureVerification_MultipleFingerprints()
         {
             try
@@ -149,6 +152,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         [InlineData(false)]
         [InlineData(true)]
         public async Task SignatureVerification_Warning(bool writeToBlobstorageService)
@@ -193,6 +197,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public async Task SignatureVerification_Disabled()
         {
             try
