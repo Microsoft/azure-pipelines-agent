@@ -272,7 +272,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
                     if (string.IsNullOrEmpty(tar))
                     {
-                        throw new NotSupportedException($"tar -xzf");
+                        throw new NotSupportedException($"tar -xozf");
                     }
 
                     // tar -xzf
@@ -294,10 +294,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                             }
                         });
 
-                        int exitCode = await processInvoker.ExecuteAsync(latestAgentDirectory, tar, $"-xzf \"{archiveFile}\"", null, token);
+                        int exitCode = await processInvoker.ExecuteAsync(latestAgentDirectory, tar, $"-xozf \"{archiveFile}\"", null, token);
                         if (exitCode != 0)
                         {
-                            throw new NotSupportedException($"Can't use 'tar -xzf' extract archive file: {archiveFile}. return code: {exitCode}.");
+                            throw new NotSupportedException($"Can't use 'tar -xozf' extract archive file: {archiveFile}. return code: {exitCode}.");
                         }
                     }
                 }
