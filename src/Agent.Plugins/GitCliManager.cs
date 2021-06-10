@@ -236,10 +236,17 @@ namespace Agent.Plugins.Repository
         // git lfs fetch origin [ref]
         public async Task<int> GitLFSFetch(AgentTaskPluginExecutionContext context, string repositoryPath, string remoteName, string refSpec, string additionalCommandLine, CancellationToken cancellationToken)
         {
+            string lfsconfig = ".lfsconfig";
+            context.Debug($"Checkout {lfsconfig} for git repository at: {repositoryPath} remote: {remoteName}.");
+
+            // default options for git checkout .lfsconfig
+            string options = StringUtil.Format($"{refSpec} -- {lfsconfig}");
+            await ExecuteGitCommandAsync(context, repositoryPath, "checkout", options, additionalCommandLine, cancellationToken);
+
             context.Debug($"Fetch LFS objects for git repository at: {repositoryPath} remote: {remoteName}.");
 
             // default options for git lfs fetch.
-            string options = StringUtil.Format($"fetch origin {refSpec}");
+            options = StringUtil.Format($"fetch origin {refSpec}");
 
             int retryCount = 0;
             int fetchExitCode = 0;

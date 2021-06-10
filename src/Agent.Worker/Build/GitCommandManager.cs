@@ -257,10 +257,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         {
             ArgUtil.NotNull(context, nameof(context));
 
+            string lfsconfig = ".lfsconfig";
+            context.Debug($"Checkout {lfsconfig} for git repository at: {repositoryPath} remote: {remoteName}.");
+
+            // default options for git checkout .lfsconfig
+            string options = StringUtil.Format($"{refSpec} -- {lfsconfig}");
+            await ExecuteGitCommandAsync(context, repositoryPath, "checkout", options, additionalCommandLine, cancellationToken);
+
             context.Debug($"Fetch LFS objects for git repository at: {repositoryPath} remote: {remoteName}.");
 
             // default options for git lfs fetch.
-            string options = StringUtil.Format($"fetch origin {refSpec}");
+            options = StringUtil.Format($"fetch origin {refSpec}");
             return await ExecuteGitCommandAsync(context, repositoryPath, "lfs", options, additionalCommandLine, cancellationToken);
         }
 
