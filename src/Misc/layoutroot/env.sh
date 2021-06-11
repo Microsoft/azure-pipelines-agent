@@ -1,13 +1,13 @@
 #!/bin/bash
 
 varCheckList=(
-    'LANG' 
-    'JAVA_HOME' 
-    'ANT_HOME' 
-    'M2_HOME' 
-    'ANDROID_HOME' 
-    'GRADLE_HOME' 
-    'NVM_BIN' 
+    'LANG'
+    'JAVA_HOME'
+    'ANT_HOME'
+    'M2_HOME'
+    'ANDROID_HOME'
+    'GRADLE_HOME'
+    'NVM_BIN'
     'NVM_PATH'
     'VSTS_HTTP_PROXY'
     'VSTS_HTTP_PROXY_USERNAME'
@@ -16,6 +16,16 @@ varCheckList=(
     'PERL5LIB'
     'AGENT_TOOLSDIRECTORY'
     )
+
+# Allows the caller to specify additional vars on the commandline, for example:
+# ./env.sh DOTNET_SYSTEM_GLOBALIZATION_INVARIANT DOTNET_ROOT
+for arg in "$@"
+do
+    if [[ ! " ${varCheckList[@]} " =~ " ${arg} " ]]; then
+        varCheckList+=($arg)
+    fi
+done
+
 
 envContents=""
 
@@ -34,7 +44,7 @@ function writeVar()
         if [ ! -z "${!checkVar}" ]; then
             echo "${checkVar}=${!checkVar}">>.env
         fi
-    fi 
+    fi
 }
 
 echo $PATH>.path
