@@ -2,10 +2,8 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -94,123 +92,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
         private void WindowsKillProcessTree()
         {
-            var pid = _proc?.Id;
-            if (pid == null)
+            try
             {
-                // process already exit, stop here.
-                return;
+                _proc?.Kill(entireProcessTree: true);
             }
-
-            Dictionary<int, int> processRelationship = new Dictionary<int, int>();
-            Trace.Info($"Scan all processes to find relationship between all processes.");
-            foreach (Process proc in Process.GetProcesses())
+            catch (AggregateException ex)
             {
-                try
-                {
-                    if (!proc.SafeHandle.IsInvalid)
-                    {
-                        PROCESS_BASIC_INFORMATION pbi = new PROCESS_BASIC_INFORMATION();
-                        int returnLength = 0;
-                        int queryResult = NtQueryInformationProcess(proc.SafeHandle.DangerousGetHandle(), PROCESSINFOCLASS.ProcessBasicInformation, ref pbi, Marshal.SizeOf(pbi), ref returnLength);
-                        if (queryResult == 0) // == 0 is OK
-                        {
-                            Trace.Verbose($"Process: {proc.Id} is child process of {pbi.InheritedFromUniqueProcessId}.");
-                            processRelationship[proc.Id] = (int)pbi.InheritedFromUniqueProcessId;
-                        }
-                        else
-                        {
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Ignore all exceptions, since KillProcessTree is best effort.
-                    Trace.Verbose("Ignore any catched exception during detecting process relationship.");
-                    Trace.Verbose(ex.ToString());
-                }
+                Trace.Info("Ignore exceptions during Process.Kill(bool).");
+                Trace.Info(ex.ToString());
             }
-
-            Trace.Verbose($"Start killing process tree of process '{pid.Value}'.");
-            Stack<ProcessTerminationInfo> processesNeedtoKill = new Stack<ProcessTerminationInfo>();
-            processesNeedtoKill.Push(new ProcessTerminationInfo(pid.Value, false));
-            while (processesNeedtoKill.Count() > 0)
-            {
-                ProcessTerminationInfo procInfo = processesNeedtoKill.Pop();
-                List<int> childProcessesIds = new List<int>();
-                if (!procInfo.ChildPidExpanded)
-                {
-                    Trace.Info($"Find all child processes of process '{procInfo.Pid}'.");
-                    childProcessesIds = processRelationship.Where(p => p.Value == procInfo.Pid).Select(k => k.Key).ToList();
-                }
-
-                if (childProcessesIds.Count > 0)
-                {
-                    Trace.Info($"Need kill all child processes trees before kill process '{procInfo.Pid}'.");
-                    processesNeedtoKill.Push(new ProcessTerminationInfo(procInfo.Pid, true));
-                    foreach (var childPid in childProcessesIds)
-                    {
-                        Trace.Info($"Child process '{childPid}' needs be killed first.");
-                        processesNeedtoKill.Push(new ProcessTerminationInfo(childPid, false));
-                    }
-                }
-                else
-                {
-                    Trace.Info($"Kill process '{procInfo.Pid}'.");
-                    try
-                    {
-                        Process leafProcess = Process.GetProcessById(procInfo.Pid);
-                        try
-                        {
-                            leafProcess.Kill();
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            // The process has already exited
-                            Trace.Verbose("Ignore InvalidOperationException during Process.Kill().");
-                            Trace.Verbose(ex.ToString());
-                        }
-                        catch (Win32Exception ex) when (ex.NativeErrorCode == 5)
-                        {
-                            // The associated process could not be terminated
-                            // The process is terminating
-                            // NativeErrorCode 5 means Access Denied
-                            Trace.Verbose("Ignore Win32Exception with NativeErrorCode 5 during Process.Kill().");
-                            Trace.Verbose(ex.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            // Ignore any additional exception
-                            Trace.Verbose("Ignore additional exceptions during Process.Kill().");
-                            Trace.Verbose(ex.ToString());
-                        }
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        // process already gone, nothing needs killed.
-                        Trace.Verbose("Ignore ArgumentException during Process.GetProcessById().");
-                        Trace.Verbose(ex.ToString());
-                    }
-                    catch (Exception ex)
-                    {
-                        // Ignore any additional exception
-                        Trace.Verbose("Ignore additional exceptions during Process.GetProcessById().");
-                        Trace.Verbose(ex.ToString());
-                    }
-                }
-            }
-        }
-
-        private class ProcessTerminationInfo
-        {
-            public ProcessTerminationInfo(int pid, bool expanded)
-            {
-                Pid = pid;
-                ChildPidExpanded = expanded;
-            }
-
-            public int Pid { get; }
-            public bool ChildPidExpanded { get; }
         }
 
         private enum ConsoleCtrlEvent
@@ -218,26 +108,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             CTRL_C = 0,
             CTRL_BREAK = 1
         }
-
-        private enum PROCESSINFOCLASS : int
-        {
-            ProcessBasicInformation = 0
-        };
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct PROCESS_BASIC_INFORMATION
-        {
-            public long ExitStatus;
-            public long PebBaseAddress;
-            public long AffinityMask;
-            public long BasePriority;
-            public long UniqueProcessId;
-            public long InheritedFromUniqueProcessId;
-        };
-
-
-        [DllImport("ntdll.dll", SetLastError = true)]
-        private static extern int NtQueryInformationProcess(IntPtr processHandle, PROCESSINFOCLASS processInformationClass, ref PROCESS_BASIC_INFORMATION processInformation, int processInformationLength, ref int returnLength);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool GenerateConsoleCtrlEvent(ConsoleCtrlEvent sigevent, int dwProcessGroupId);
