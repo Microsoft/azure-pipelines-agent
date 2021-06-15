@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-﻿using Microsoft.TeamFoundation.TestManagement.WebApi;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         /// </summary>
         /// <param name="filePath">File path</param>
         /// <returns>TestRunData</returns>
-        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext)
+        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext, bool isParallelProcessingFFEnabled = false)
         {
             _executionContext = executionContext;
 
@@ -80,11 +80,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             DateTime runFinishDate = DateTime.MinValue;
             if (node != null && node.Attributes["start"] != null && node.Attributes["finish"] != null)
             {
-                if (DateTime.TryParse(node.Attributes["start"].Value, DateTimeFormatInfo.InvariantInfo,DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out runStartDate))
+                if (DateTime.TryParse(node.Attributes["start"].Value, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out runStartDate))
                 {
                     _executionContext.Debug(string.Format(CultureInfo.InvariantCulture, "Setting run start and finish times."));
                     //Only if there is a valid start date.
-                    DateTime.TryParse(node.Attributes["finish"].Value, DateTimeFormatInfo.InvariantInfo,DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out runFinishDate);
+                    DateTime.TryParse(node.Attributes["finish"].Value, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out runFinishDate);
                     if (runFinishDate < runStartDate)
                     {
                         runFinishDate = runStartDate = DateTime.MinValue;
@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             //Parse the Deployment node for the runDeploymentRoot - this is the attachment root. Required for .NET Core
             XmlNode deploymentNode = doc.SelectSingleNode("/TestRun/TestSettings/Deployment");
             var _attachmentRoot = string.Empty;
-            if (deploymentNode != null && deploymentNode.Attributes["runDeploymentRoot"] != null )
+            if (deploymentNode != null && deploymentNode.Attributes["runDeploymentRoot"] != null)
             {
                 _attachmentRoot = deploymentNode.Attributes["runDeploymentRoot"].Value;
             }
@@ -309,12 +309,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 DateTime completedDate = startedDate.AddTicks(duration.Ticks);
                 resultCreateModel.CompletedDate = completedDate;
 
-                if ((DateTime.Compare(default(DateTime), startedDate) < 0 && DateTime.Compare(startedDate, (DateTime) SqlDateTime.MinValue) <= 0)
-                    || (DateTime.Compare(default(DateTime), completedDate) < 0 && DateTime.Compare(completedDate, (DateTime) SqlDateTime.MinValue) <= 0)) {
+                if ((DateTime.Compare(default(DateTime), startedDate) < 0 && DateTime.Compare(startedDate, (DateTime)SqlDateTime.MinValue) <= 0)
+                    || (DateTime.Compare(default(DateTime), completedDate) < 0 && DateTime.Compare(completedDate, (DateTime)SqlDateTime.MinValue) <= 0))
+                {
 
-                        DateTime utcNow = DateTime.UtcNow;
-                        resultCreateModel.StartedDate = utcNow;
-                        resultCreateModel.CompletedDate = utcNow.AddTicks(duration.Ticks);
+                    DateTime utcNow = DateTime.UtcNow;
+                    resultCreateModel.StartedDate = utcNow;
+                    resultCreateModel.CompletedDate = utcNow.AddTicks(duration.Ticks);
                 }
 
                 if (resultNode.Attributes["outcome"] == null || resultNode.Attributes["outcome"].Value == null || string.Equals(resultNode.Attributes["outcome"].Value, "failed", StringComparison.OrdinalIgnoreCase))
@@ -582,7 +583,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 
                     resultCreateModel.SubResultData = new List<TestCaseSubResultData>();
 
-                    resultCreateModel.SubResultData.AddRange(ReadActualSubResults(resNodes, TestType.UnitTest, level+1));
+                    resultCreateModel.SubResultData.AddRange(ReadActualSubResults(resNodes, TestType.UnitTest, level + 1));
                     resultCreateModel.SubResultData.AddRange(ReadActualSubResults(webTestResultNodes, TestType.WebTest, level + 1));
                     resultCreateModel.SubResultData.AddRange(ReadActualSubResults(orderedTestResultNodes, TestType.OrderedTest, level + 1));
                 }
@@ -664,7 +665,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             if (testType == TestType.OrderedTest)
             {
                 return ResultGroupType.OrderedTest;
-            } else
+            }
+            else
             {
                 if (resultNode.Attributes["resultType"]?.Value != null && resultNode.Attributes["resultType"]?.Value == "DataDrivenTest")
                 {

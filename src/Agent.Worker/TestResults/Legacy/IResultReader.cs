@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-﻿using TestRunContext = Microsoft.TeamFoundation.TestClient.PublishTestResults.TestRunContext;
+using TestRunContext = Microsoft.TeamFoundation.TestClient.PublishTestResults.TestRunContext;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 {
@@ -12,7 +12,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         /// </summary>
         /// <param name="filePath">File path</param>
         /// <returns>TestCaseResultData Array</returns>
-        TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext);
+        TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext, bool isParallelProcessingFFEnabled = false);
 
         /// <summary>
         /// Should the run level attachments be uploaded
@@ -23,5 +23,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         /// Result reader name
         /// </summary>
         string Name { get; }
+
     }
 }

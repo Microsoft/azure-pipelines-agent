@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-﻿using Microsoft.TeamFoundation.TestManagement.WebApi;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
@@ -14,7 +14,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 {
     internal class NUnitResultsXmlReader
     {
-        public NUnitResultsXmlReader() 
+        public NUnitResultsXmlReader()
         {
         }
 
@@ -162,7 +162,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                         resultCreateModel.TestCaseTitle = testCaseNode.Attributes["name"].Value;
                         resultCreateModel.AutomatedTestName = testCaseNode.Attributes["name"].Value;
                     }
-                    
+
                     if (!string.IsNullOrEmpty(testStorage))
                     {
                         resultCreateModel.AutomatedTestStorage = testStorage;
@@ -175,7 +175,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                         double duration = 0;
                         double.TryParse(testCaseNode.Attributes["time"].Value, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out duration);
                         // Duration of a test case cannot be less than zero
-                        testCaseDuration = ( duration < 0 ) ? testCaseDuration : TimeSpan.FromSeconds(duration);
+                        testCaseDuration = (duration < 0) ? testCaseDuration : TimeSpan.FromSeconds(duration);
                     }
                     resultCreateModel.DurationInMs = testCaseDuration.TotalMilliseconds;
 
@@ -268,7 +268,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         TestRunData GetTestRunData(string filePath, XmlDocument doc, XmlNode testResultsNode, TestRunContext runContext, bool addResultsAsAttachments);
     }
 
-    internal class NUnit2ResultsXmlReader: NUnitResultsXmlReader, INUnitResultsXmlReader
+    internal class NUnit2ResultsXmlReader : NUnitResultsXmlReader, INUnitResultsXmlReader
     {
         public new TestRunData GetTestRunData(string filePath, XmlDocument doc, XmlNode testResultsNode, TestRunContext runContext, bool addResultsAsAttachments)
         {
@@ -280,7 +280,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         }
     }
 
-    internal class NUnit3ResultsXmlReader: INUnitResultsXmlReader
+    internal class NUnit3ResultsXmlReader : INUnitResultsXmlReader
     {
         private IdentityRef _runUserIdRef;
         private string _platform;
@@ -299,14 +299,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             double duration = 0;
             double.TryParse(testCaseResultNode.Attributes["duration"]?.Value, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out duration);
             // Ensure Duration cannot be negative
-            duration = (duration <0) ? 0 : duration;
+            duration = (duration < 0) ? 0 : duration;
             testCaseResultData.DurationInMs = TimeSpan.FromSeconds(duration).TotalMilliseconds;
             var testExecutionStartedOn = DateTime.MinValue;
             DateTime.TryParse(testCaseResultNode.Attributes["start-time"]?.Value, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out testExecutionStartedOn);
             testCaseResultData.StartedDate = testExecutionStartedOn;
             var testExecutionEndedOn = DateTime.MinValue;
-            DateTime.TryParse(testCaseResultNode.Attributes["end-time"]?.Value, DateTimeFormatInfo.InvariantInfo,DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out testExecutionEndedOn);
-            testCaseResultData.CompletedDate = testExecutionEndedOn; 
+            DateTime.TryParse(testCaseResultNode.Attributes["end-time"]?.Value, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out testExecutionEndedOn);
+            testCaseResultData.CompletedDate = testExecutionEndedOn;
             testCaseResultData.AttachmentData = new AttachmentData();
             if (testCaseResultNode.Attributes["result"] != null)
             {
@@ -321,7 +321,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 else if (string.Equals(testCaseResultNode.Attributes["result"].Value, "Skipped", StringComparison.OrdinalIgnoreCase))
                 {
                     testCaseResultData.Outcome = TestOutcome.NotExecuted.ToString();
-                } 
+                }
                 else
                 {
                     testCaseResultData.Outcome = TestOutcome.Inconclusive.ToString();
@@ -376,7 +376,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                     {
                         var environmentNode = testAssemblyNode.SelectSingleNode("environment");
                         var hostname = String.Empty;
-                        var assemblyName = (testAssemblyNode.Attributes["name"] != null ? testAssemblyNode.Attributes["name"].Value : null);  
+                        var assemblyName = (testAssemblyNode.Attributes["name"] != null ? testAssemblyNode.Attributes["name"].Value : null);
                         if (environmentNode != null)
                         {
                             if (environmentNode.Attributes["machine-name"] != null)
@@ -461,7 +461,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             AddResultsFileToRunLevelAttachments = true;
         }
 
-        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext = null)
+        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext = null, bool isParallelProcessingFFEnabled = false)
         {
             var doc = new XmlDocument();
             try
@@ -499,7 +499,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             }
 
             return nunitResultsReader.GetTestRunData(filePath, doc, testResultsNode, runContext, AddResultsFileToRunLevelAttachments);
-            
+
         }
 
 

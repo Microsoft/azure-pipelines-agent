@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-﻿using Microsoft.TeamFoundation.TestManagement.WebApi;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         /// <param name="filePath"></param>
         /// <param name="runContext"></param>
         /// <returns></returns>
-        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext = null)
+        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext = null, bool isParallelProcessingFFEnabled = false)
         {
             _ec = executionContext;
 
@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 )
             {
                 Attachments = AddResultsFileToRunLevelAttachments ? new string[] { filePath } : new string[0]
-            };            
+            };
             // Read results
             XmlNodeList resultsNodes = doc.SelectNodes("/Site/Testing/Test");
             results.AddRange(ReadActualResults(resultsNodes));
@@ -105,7 +105,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         {
             int startTime, endTime;
             if (int.TryParse(node.SelectSingleNode("./StartTestTime")?.InnerText, out startTime) && int.TryParse(node.SelectSingleNode("./EndTestTime")?.InnerText, out endTime)
-                && startTime>0 && endTime>0)
+                && startTime > 0 && endTime > 0)
             {
                 _ec.Debug("Setting run start and finish times.");
 

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-﻿using Microsoft.TeamFoundation.TestManagement.WebApi;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
@@ -29,10 +29,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         /// <param name="filePath"></param>
         /// <param name="runContext"></param>
         /// <returns></returns>
-        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext = null)
+        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext = null, bool isParallelProcessingFFEnabled = false)
         {
             // http://windyroad.com.au/dl/Open%20Source/JUnit.xsd
-            
+
             XmlDocument doc = new XmlDocument();
             try
             {
@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                     foreach (XmlNode testSuiteNode in testSuiteNodeList)
                     {
                         //for each available suites get all suite details
-                        TestSuiteSummary testSuiteSummary = ReadTestSuite(testSuiteNode, runUserIdRef);
+                        TestSuiteSummary testSuiteSummary = ReadTestSuite(testSuiteNode, runUserIdRef, isParallelProcessingFFEnabled);
 
                         // sum up testsuite durations and test case durations, decision on what to use will be taken later
                         runSummary.TotalTestCaseDuration = runSummary.TotalTestCaseDuration.Add(testSuiteSummary.TotalTestCaseDuration);
@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 XmlNode testSuiteNode = doc.SelectSingleNode("testsuite");
                 if (testSuiteNode != null)
                 {
-                    runSummary = ReadTestSuite(testSuiteNode, runUserIdRef);
+                    runSummary = ReadTestSuite(testSuiteNode, runUserIdRef, isParallelProcessingFFEnabled);
                     //only if start time is available then only we need to calculate completed time
                     if (runSummary.TimeStamp != DateTime.MaxValue)
                     {
@@ -130,20 +130,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             if (!runSummary.SuiteTimeStampAvailable)
             {
                 executionContext.Output("Timestamp is not available for one or more testsuites. Total run duration is being calculated as the sum of time durations of detected testsuites");
-               
+
                 if (!runSummary.SuiteTimeDataAvailable)
                 {
                     executionContext.Output("Time is not available for one or more testsuites. Total run duration is being calculated as the sum of time durations of detected testcases");
                 }
             }
             //if start time is not calculated then it should be initialized as present time
-            runSummary.TimeStamp = runSummary.TimeStamp == DateTime.MaxValue 
-                ? presentTime 
+            runSummary.TimeStamp = runSummary.TimeStamp == DateTime.MaxValue
+                ? presentTime
                 : runSummary.TimeStamp;
             //if suite timestamp data is not available even for single testsuite, then fallback to testsuite run time
             //if testsuite run time is not available even for single testsuite, then fallback to total test case duration
-            maxCompletedTime = !runSummary.SuiteTimeStampAvailable || maxCompletedTime == DateTime.MinValue 
-                ? runSummary.TimeStamp.Add(runSummary.SuiteTimeDataAvailable ? runSummary.TestSuiteDuration 
+            maxCompletedTime = !runSummary.SuiteTimeStampAvailable || maxCompletedTime == DateTime.MinValue
+                ? runSummary.TimeStamp.Add(runSummary.SuiteTimeDataAvailable ? runSummary.TestSuiteDuration
                 : runSummary.TotalTestCaseDuration) : maxCompletedTime;
             //create test run data
             var testRunData = new TestRunData(
@@ -177,20 +177,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         /// Read testcases under testsuite node in xml
         /// </summary>
         /// <param name="rootNode"></param>
-        private TestSuiteSummary ReadTestSuite(XmlNode rootNode, IdentityRef runUserIdRef)
+        private TestSuiteSummary ReadTestSuite(XmlNode rootNode, IdentityRef runUserIdRef, bool isParallelProcessingFFEnabled = false)
         {
             TestSuiteSummary testSuiteSummary = new TestSuiteSummary(Name);
-            
+
             XmlNodeList innerTestSuiteNodeList = rootNode.SelectNodes("./testsuite");
-            if(innerTestSuiteNodeList != null)
+            if (innerTestSuiteNodeList != null)
             {
-                foreach(XmlNode innerTestSuiteNode in innerTestSuiteNodeList)
+                foreach (XmlNode innerTestSuiteNode in innerTestSuiteNodeList)
                 {
-                    TestSuiteSummary innerTestSuiteSummary = ReadTestSuite(innerTestSuiteNode , runUserIdRef);
+                    TestSuiteSummary innerTestSuiteSummary = ReadTestSuite(innerTestSuiteNode, runUserIdRef);
                     testSuiteSummary.Results.AddRange(innerTestSuiteSummary.Results);
                 }
             }
-            
+
             TimeSpan totalTestSuiteDuration = TimeSpan.Zero;
             TimeSpan totalTestCaseDuration = TimeSpan.Zero;
 
@@ -260,9 +260,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                     var testCaseDuration = GetTimeSpan(testCaseNode, out TestCaseTimeDataAvailable);
                     totalTestCaseDuration = totalTestCaseDuration + testCaseDuration;
                     resultCreateModel.DurationInMs = testCaseDuration.TotalMilliseconds;
-                    resultCreateModel.StartedDate = testCaseStartTime;
-                    resultCreateModel.CompletedDate = testCaseStartTime.AddTicks(testCaseDuration.Ticks);
-                    testCaseStartTime = testCaseStartTime.AddTicks(1) + testCaseDuration; //next start time
+                    if (isParallelProcessingFFEnabled)
+                    {
+                        resultCreateModel.StartedDate = testSuiteStartTime;
+                        resultCreateModel.CompletedDate = testSuiteStartTime.AddTicks(testCaseDuration.Ticks);
+                    }
+                    else
+                    {
+                        resultCreateModel.StartedDate = testCaseStartTime;
+                        resultCreateModel.CompletedDate = testCaseStartTime.AddTicks(testCaseDuration.Ticks);
+                        testCaseStartTime = testCaseStartTime.AddTicks(1) + testCaseDuration; //next start time
+                    }
 
                     //test case outcome
                     XmlNode failure, error, skipped;
@@ -326,8 +334,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 if (timeValue != null)
                 {
                     // Ensure that the time data is a positive value within range
-                    if (Double.TryParse(timeValue, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out double timeInSeconds) 
-                        && !Double.IsNaN(timeInSeconds) 
+                    if (Double.TryParse(timeValue, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out double timeInSeconds)
+                        && !Double.IsNaN(timeInSeconds)
                         && !Double.IsInfinity(timeInSeconds)
                         && timeInSeconds >= 0)
                     {
@@ -362,7 +370,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             stdout = testCaseNode.SelectSingleNode("./system-out");
 
             resultCreateModel.AttachmentData = new AttachmentData();
-            
+
             if (stdout != null && !string.IsNullOrWhiteSpace(stdout.InnerText))
             {
                 resultCreateModel.AttachmentData.ConsoleLog = stdout.InnerText;
@@ -389,9 +397,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             public List<TestCaseResultData> Results { get; set; }
 
             public TimeSpan TotalTestCaseDuration { get; set; }
-            
+
             public bool SuiteTimeDataAvailable { get; set; }
-            
+
             public bool SuiteTimeStampAvailable { get; set; }
 
             public TestSuiteSummary(string name)

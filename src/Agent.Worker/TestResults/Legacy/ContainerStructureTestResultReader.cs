@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
     /// </summary>
     public class ContainerStructureTestResultReader : AgentService, IResultReader
     {
-        public bool AddResultsFileToRunLevelAttachments {get;set;}
+        public bool AddResultsFileToRunLevelAttachments { get; set; }
 
         public string Name => "ContainerStructure";
 
@@ -28,12 +28,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             AddResultsFileToRunLevelAttachments = true;
         }
 
-        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext)
+        public TestRunData ReadResults(IExecutionContext executionContext, string filePath, TestRunContext runContext, bool isParallelProcessingFFEnabled = false)
         {
             try
             {
                 string jsonTestSummary = File.ReadAllText(filePath);
-                if (string.IsNullOrWhiteSpace(jsonTestSummary)) 
+                if (string.IsNullOrWhiteSpace(jsonTestSummary))
                 {
                     return null;
                 }
@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 JsonTestSummary testSummary = StringUtil.ConvertFromJson<JsonTestSummary>(jsonTestSummary);
 
                 // Adding the minimum details from the JSON.
-                TestRunData testRunData = new TestRunData( name: "Container Structure Test",
+                TestRunData testRunData = new TestRunData(name: "Container Structure Test",
                     isAutomated: true,
                     buildId: runContext != null ? runContext.BuildId : 0,
                     buildFlavor: runContext != null ? runContext.Configuration : string.Empty,
@@ -51,18 +51,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 
                 List<TestCaseResultData> results = new List<TestCaseResultData>();
 
-                foreach(JsonTestResult result in testSummary.Results)
+                foreach (JsonTestResult result in testSummary.Results)
                 {
                     TestCaseResultData resultCreateModel = new TestCaseResultData();
                     resultCreateModel.TestCaseTitle = result.Name;
                     resultCreateModel.AutomatedTestName = result.Name;
                     bool outcome = result.Pass.Equals("true", StringComparison.OrdinalIgnoreCase);
 
-                    if(!outcome)
+                    if (!outcome)
                     {
                         resultCreateModel.ErrorMessage = string.Join("|", result.Errors);
                     }
-                    
+
                     resultCreateModel.State = "Completed";
                     resultCreateModel.AutomatedTestType = Name;
                     resultCreateModel.Outcome = outcome ? TestOutcome.Passed.ToString() : TestOutcome.Failed.ToString();
@@ -73,7 +73,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 
                 return testRunData;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 executionContext.Output("Error occured in reading results : " + ex);
             }
@@ -83,10 +83,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 
     public class JsonTestSummary
     {
-        public string Name {get;set;}
-        public int Pass {get;set;}
-        public int Fail {get;set;}
-        public JsonTestResult[] Results {get;set;}
+        public string Name { get; set; }
+        public int Pass { get; set; }
+        public int Fail { get; set; }
+        public JsonTestResult[] Results { get; set; }
         public JsonTestSummary()
         {
         }
@@ -95,9 +95,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 
     public class JsonTestResult
     {
-        public string Name {get;set;}
-        public string Pass {get;set;}
-        public string[] Errors {get;set;}
+        public string Name { get; set; }
+        public string Pass { get; set; }
+        public string[] Errors { get; set; }
         public JsonTestResult()
         {
         }

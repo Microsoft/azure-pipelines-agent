@@ -177,6 +177,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
               "</testsuite>" +
             "</testsuites>";
 
+        private const string _jUnitResultsParallelStartDate =
+            "<?xml version =\"1.0\"?>" +
+            "<testsuites>" +
+              "<testsuite name =\"PhantomJS 2.0.0 (Windows 8)\" package=\"\" timestamp=\"2015-05-22T12:56:58\" id=\"0\" hostname=\"nirvana\" tests=\"56\" errors=\"0\" failures=\"0\" time=\"0.394\">" +
+              "<properties>" +
+                "<property name =\"browser.fullName\" value=\"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.0.0 (development) Safari/538.1\"/>" +
+              "</properties>" +
+                "<testcase name =\"can be instantiated\" time=\"1.01\" classname=\"PhantomJS 2.0.0 (Windows 8).the Admin module\"/>" +
+                "<testcase name =\"configures the router\" time=\"2.00\" classname=\"PhantomJS 2.0.0 (Windows 8).the Admin module\"/>" +
+                "<system-out><![CDATA[]]></system-out>" +
+                "<system-err/>" +
+              "</testsuite>" +
+            "</testsuites>";
+
         private const string _jUnitBasicResultsXmlWithoutMandatoryFields =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<testsuite errors=\"0\" failures=\"1\" hostname=\"mghost\" name=\"com.contoso.billingservice.ConsoleMessageRendererTest\" skipped=\"0\" tests=\"2\" time=\"0.006\" timestamp=\"2015-04-06T21:56:24\">" +
@@ -542,6 +556,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "PublishTestResults")]
+        public void VerifyTestCaseStartDateForParallelReporting()
+        {
+            SetupMocks();
+            _junitResultsToBeRead = _jUnitResultsParallelStartDate;
+            ReadResults(null, true, true);
+            Assert.Equal(_testRunData.StartDate, _testRunData.Results[0].StartedDate.ToString("o"));
+            Assert.Equal(_testRunData.StartDate, _testRunData.Results[1].StartedDate.ToString("o"));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "PublishTestResults")]
+        public void VerifyTestCaseCompleteDateForParallelReporting()
+        {
+            SetupMocks();
+            _junitResultsToBeRead = _jUnitResultsParallelStartDate;
+            ReadResults(null, true, true);
+            Assert.Equal("2015-05-22T12:56:59.0100000Z", _testRunData.Results[0].CompletedDate.ToString("o"));
+            Assert.Equal("2015-05-22T12:57:00.0000000Z", _testRunData.Results[1].CompletedDate.ToString("o"));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "PublishTestResults")]
         public void VerifyTestCaseCompletedDate()
         {
             SetupMocks();
@@ -612,14 +650,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             _ec.Setup(x => x.Variables).Returns(variables);
         }
 
-        private void ReadResults(TestRunContext runContext = null, bool attachRunLevelAttachments = true)
+        private void ReadResults(TestRunContext runContext = null, bool attachRunLevelAttachments = true, bool parallelProcessingEnabled = false)
         {
             _fileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
             File.WriteAllText(_fileName, _junitResultsToBeRead);
 
             _jUnitReader = new JUnitResultReader();
             _jUnitReader.AddResultsFileToRunLevelAttachments = attachRunLevelAttachments;
-            _testRunData = _jUnitReader.ReadResults(_ec.Object, _fileName, runContext);
+            _testRunData = _jUnitReader.ReadResults(_ec.Object, _fileName, runContext, parallelProcessingEnabled);
         }
 
         public void Dispose()

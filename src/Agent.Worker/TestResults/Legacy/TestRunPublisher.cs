@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-﻿using Microsoft.TeamFoundation.TestManagement.WebApi;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker.TestResults.Utils;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
     [ServiceLocator(Default = typeof(TestRunPublisher))]
     public interface ITestRunPublisher : IAgentService
     {
-        void InitializePublisher(IExecutionContext executionContext, VssConnection connection, string projectName, IResultReader resultReader);
+        void InitializePublisher(IExecutionContext executionContext, VssConnection connection, string projectName, IResultReader resultReader, IFeatureFlagService featureFlagService = null);
         Task<TestRun> StartTestRunAsync(TestRunData testRunData, CancellationToken cancellationToken = default(CancellationToken));
         Task AddResultsAsync(TestRun testRun, TestCaseResultData[] testResults, CancellationToken cancellationToken = default(CancellationToken));
         Task<TestRun> EndTestRunAsync(TestRunData testRunData, int testRunId, bool publishAttachmentsAsArchive = false, CancellationToken cancellationToken = default(CancellationToken));
@@ -77,11 +77,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         private ITestResultsServer _testResultsServer;
         private IResultReader _resultReader;
         private PublisherInputValidator _publisherInputValidator;
+        private IFeatureFlagService _featureFlagService = new FeatureFlagService();
         private const int MaxRetries = 3;
+        private bool _isParallelProcessingFFEnabled = false;
         #endregion
 
         #region Public API
-        public void InitializePublisher(IExecutionContext executionContext, VssConnection connection, string projectName, IResultReader resultReader)
+        public void InitializePublisher(IExecutionContext executionContext, VssConnection connection, string projectName, IResultReader resultReader, IFeatureFlagService featureFlagService = null)
         {
             ArgUtil.NotNull(connection, nameof(connection));
             Trace.Entering();
@@ -92,6 +94,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             _testResultsServer = HostContext.GetService<ITestResultsServer>();
             _testResultsServer.InitializeServer(connection, executionContext);
             _publisherInputValidator = new PublisherInputValidator(_executionContext);
+            if(featureFlagService == null)
+            {
+                _featureFlagService.InitializeFeatureService(executionContext, connection);
+                _isParallelProcessingFFEnabled = _featureFlagService.GetFeatureFlagState("TestManagement.Server.JUnitTestCaseParallelReportingEnabledFF", new Guid("00000054-0000-8888-8000-000000000000"));
+            }
+            else
+            {
+                featureFlagService.InitializeFeatureService(executionContext, connection);
+                _isParallelProcessingFFEnabled = featureFlagService.GetFeatureFlagState("TestManagement.Server.JUnitTestCaseParallelReportingEnabledFF", new Guid("00000054-0000-8888-8000-000000000000"));
+            }
             Trace.Leaving();
         }
 
@@ -121,7 +133,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 var testResultsBatch = new TestCaseResult[noOfResultsToBePublished];
                 Array.Copy(testResults, i, currentBatch, 0, noOfResultsToBePublished);
 
-                for (int testResultsIndex = 0; testResultsIndex < noOfResultsToBePublished; testResultsIndex++){
+                for (int testResultsIndex = 0; testResultsIndex < noOfResultsToBePublished; testResultsIndex++)
+                {
 
                     if (IsMaxLimitReachedForSubresultPreProcessing(currentBatch[testResultsIndex].AutomatedTestName, currentBatch[testResultsIndex].TestCaseSubResultData) == false)
                     {
@@ -192,7 +205,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
         public TestRunData ReadResultsFromFile(TestRunContext runContext, string filePath)
         {
             Trace.Entering();
-            return _resultReader.ReadResults(_executionContext, filePath, runContext);
+            return _resultReader.ReadResults(_executionContext, filePath, runContext, _isParallelProcessingFFEnabled);
         }
 
         /// <summary>
@@ -206,7 +219,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             ArgUtil.NotNull(runContext, nameof(runContext));
             Trace.Entering();
             runContext.RunName = runName;
-            return _resultReader.ReadResults(_executionContext, filePath, runContext);
+            return _resultReader.ReadResults(_executionContext, filePath, runContext, _isParallelProcessingFFEnabled);
         }
 
         public bool IsTestRunFailed(string projectName,
@@ -395,9 +408,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 }
             }
 
-            if(testCaseResult.SubResults != null && testCaseResult.SubResults.Any() && testCaseResultData.TestCaseSubResultData != null)
+            if (testCaseResult.SubResults != null && testCaseResult.SubResults.Any() && testCaseResultData.TestCaseSubResultData != null)
             {
-                for(int i = 0; i < testCaseResultData.TestCaseSubResultData.Count; i++)
+                for (int i = 0; i < testCaseResultData.TestCaseSubResultData.Count; i++)
                 {
                     await UploadTestSubResultsAttachmentAsync(testRunId, testCaseResult.Id, testCaseResultData.TestCaseSubResultData[i], testCaseResult.SubResults[i], 1, cancellationToken);
                 }
@@ -425,7 +438,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                     .Select(async attachment =>
                     {
                         TestAttachmentRequestModel reqModel = GetAttachmentRequestModel(attachment);
-                        if(reqModel != null)
+                        if (reqModel != null)
                         {
                             await _testResultsServer.CreateTestSubResultAttachmentAsync(reqModel, _projectName, testRunId, testResultId, subresult.Id, cancellationToken);
                         }
@@ -501,9 +514,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             // Do not upload duplicate entries
             HashSet<string> attachedFiles = GetUniqueTestRunFiles(attachments);
             var attachFilesTasks = attachedFiles.Select(async file =>
-             {
-                 await CreateTestRunAttachmentAsync(testRunId, file, cancellationToken);
-             });
+            {
+                await CreateTestRunAttachmentAsync(testRunId, file, cancellationToken);
+            });
             await Task.WhenAll(attachFilesTasks);
         }
 

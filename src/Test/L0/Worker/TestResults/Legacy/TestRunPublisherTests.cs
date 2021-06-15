@@ -14,7 +14,10 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults;
+using Microsoft.VisualStudio.Services.Agent.Worker.TestResults.Utils;
 using TestRunContext = Microsoft.TeamFoundation.TestClient.PublishTestResults.TestRunContext;
+using Microsoft.VisualStudio.Services.Agent;
+using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
 {
@@ -47,14 +50,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             _testRunContext = new TestRunContext("owner", "platform", "config", 1, "builduri", "releaseuri", "releaseenvuri");
 
             _reader = new Mock<IResultReader>();
-            _reader.Setup(x => x.ReadResults(It.IsAny<IExecutionContext>(), It.IsAny<string>(), It.IsAny<TestRunContext>()))
-                        .Callback<IExecutionContext, string, TestRunContext>
-                        ((executionContext, filePath, runContext) =>
+            _reader.Setup(x => x.ReadResults(It.IsAny<IExecutionContext>(), It.IsAny<string>(), It.IsAny<TestRunContext>(), It.IsAny<bool>()))
+                        .Callback<IExecutionContext, string, TestRunContext, bool>
+                        ((executionContext, filePath, runContext, ffvalue) =>
                         {
                             _runContext = runContext;
                             _resultsFilepath = filePath;
                         })
-                        .Returns((IExecutionContext executionContext, string filePath, TestRunContext runContext) =>
+                        .Returns((IExecutionContext executionContext, string filePath, TestRunContext runContext, bool ffFlag) =>
                         {
                             TestRunData trd = new TestRunData(
                                 name: "xyz",
@@ -89,7 +92,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
                             int j = 1;
                             foreach (TestCaseResult resultCreateModel in _resultCreateModels)
                             {
-                                List <TestSubResult> SubResults = null;
+                                List<TestSubResult> SubResults = null;
                                 if (resultCreateModel.SubResults != null)
                                 {
                                     SubResults = new List<TestSubResult>();
@@ -156,7 +159,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
                         {
                             if (_subResultsLevelAttachments.ContainsKey(testCaseResultId))
                             {
-                                if(_subResultsLevelAttachments[testCaseResultId].ContainsKey(testSubResultId))
+                                if (_subResultsLevelAttachments[testCaseResultId].ContainsKey(testSubResultId))
                                 {
                                     _subResultsLevelAttachments[testCaseResultId][testSubResultId].Add(reqModel);
                                 }
@@ -248,7 +251,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             _testRunData = _publisher.ReadResultsFromFile(_testRunContext, "filepath");
             _publisher.StartTestRunAsync(_testRunData);
             var result = new TestCaseResultData();
-            result.TestCaseSubResultData = new List<TestCaseSubResultData> { new TestCaseSubResultData()};
+            result.TestCaseSubResultData = new List<TestCaseSubResultData> { new TestCaseSubResultData() };
             var testRun = new TestRun { Id = 1 };
             result.TestCaseSubResultData[0].AttachmentData = new AttachmentData();
             result.TestCaseSubResultData[0].AttachmentData.AttachmentsFilePathList = new string[] { "attachment.txt" };
@@ -460,7 +463,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             ResetValues();
             _publisher.StartTestRunAsync(new TestRunData()).Wait();
             List<TestCaseResultData> testCaseResultData = new List<TestCaseResultData>();
-            for (int i = 0; i < batchSize + 1; i++) {
+            for (int i = 0; i < batchSize + 1; i++)
+            {
                 testCaseResultData.Add(new TestCaseResultData());
                 testCaseResultData[i].AttachmentData = new AttachmentData();
             }
@@ -638,7 +642,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
 
             _publisher = new TestRunPublisher();
             _publisher.Initialize(hc);
-            _publisher.InitializePublisher(_ec.Object, new VssConnection(new Uri("http://dummyurl"), new Common.VssCredentials()), "Project1", _reader.Object);
+            _publisher.InitializePublisher(_ec.Object, new VssConnection(new Uri("http://dummyurl"), new Common.VssCredentials()), "Project1", _reader.Object, new FFserviceMock());
+        }
+    }
+
+    public class FFserviceMock : IFeatureFlagService
+    {
+        public bool GetFeatureFlagState(string featureFlagName, Guid serviceInstanceId)
+        {
+            return false;
+        }
+
+        public void Initialize(IHostContext context)
+        {
+            
+        }
+
+        public void InitializeFeatureService(IExecutionContext executionContext, VssConnection connection)
+        {
+            
         }
     }
 }
