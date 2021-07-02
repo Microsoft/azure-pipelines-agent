@@ -185,7 +185,31 @@ namespace Agent.Plugins.Repository
             }
 
             ISourceProvider sourceProvider = SourceProviderFactory.GetSourceProvider(repo.Type);
-            await sourceProvider.GetSourceAsync(executionContext, repo, token);
+
+            int retryLimit = 5;
+            int currentRetry = 1;
+            TimeSpan delay = TimeSpan.FromSeconds(1);
+            while (currentRetry <= retryLimit)
+            {
+                try
+                {
+                    executionContext.Output($"Started #{currentRetry} attempt of GetSourceAsync.");
+                    await sourceProvider.GetSourceAsync(executionContext, repo, token);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    executionContext.Debug($"Failed #{currentRetry} attempt of GetSourceAsync.");
+                    executionContext.Debug(ex.ToString());
+                    currentRetry++;
+
+                    if (currentRetry > retryLimit)
+                    {
+                        throw;
+                    }
+                }
+                await Task.Delay(delay);
+            }
         }
     }
 
