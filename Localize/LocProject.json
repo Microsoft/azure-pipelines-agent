@@ -1,0 +1,14 @@
+{
+    "Projects": [
+      {
+        "LocItems": [
+          {
+            "Languages": "de-de;en-US;es-es;fr-fr;it-IT;ja-jp;ko-KR;ru-RU;zh-CN;zh-TW",
+            "SourceFile": "src\\Agent.Service\\Windows\\Resources.resx",
+            "CopyOption": "LangIDOnName",
+            "OutputPath": "src\\Agent.Service\\Windows"
+          }
+        ]
+      }
+    ]
+  }
