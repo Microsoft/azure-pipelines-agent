@@ -280,14 +280,33 @@ namespace Agent.Plugins.Repository
             var useServerWorkspace = StringUtil.ConvertToBoolean(ExecutionContext.Variables.GetValueOrDefault("build.useserverworkspaces")?.Value ?? "false");
             ExecutionContext.Debug($"useServerWorkspace is set to : '{useServerWorkspace}'");
 
+            var useFiletimeCheckin = StringUtil.ConvertToBoolean(ExecutionContext.Variables.GetValueOrDefault("build.tfvc.usefiletimecheckin")?.Value ?? "false");
+            ExecutionContext.Debug($"useFiletimeCheckin is set to : '{useFiletimeCheckin}'");
+
+            // Build the args.
+            var args = new List<string>();
+            args.Add("vc");
+            args.Add("workspace");
+            args.Add("/new");
+
             if (useServerWorkspace)
             {
-                await RunCommandAsync(RetriesOnFailure, "vc", "workspace", "/new", "/location:server", "/permission:Public", WorkspaceName);
+                args.Add("/location:server");
             }
             else
             {
-                await RunCommandAsync(RetriesOnFailure, "vc", "workspace", "/new", "/location:local", "/permission:Public", WorkspaceName);
+                args.Add("/location:local");
             }
+
+            if (useFiletimeCheckin)
+            {
+                args.Add("/filetime:checkin");
+            }
+
+            args.Add("/permission:Public");
+            args.Add(WorkspaceName);
+
+            await RunCommandAsync(RetriesOnFailure, args.ToArray());
         }
 
         public async Task<ITfsVCWorkspace[]> WorkspacesAsync(bool matchWorkspaceNameOnAnyComputer = false)
