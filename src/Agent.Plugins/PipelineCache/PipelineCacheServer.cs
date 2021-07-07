@@ -49,10 +49,13 @@ namespace Agent.Plugins.PipelineCache
                 PipelineCacheActionRecord cacheRecordGet = clientTelemetry.CreateRecord<PipelineCacheActionRecord>((level, uri, type) =>
                         new PipelineCacheActionRecord(level, uri, type, PipelineArtifactConstants.RestoreCache, context));
                 PipelineCacheArtifact getResult = await pipelineCacheClient.GetPipelineCacheArtifactAsync(new [] {fingerprint}, cancellationToken, cacheRecordGet);
+                var isImmutable = context.GetInput(PipelineCacheTaskPluginBase.PipelineCacheTaskPluginConstants.Immutable) ?? "true";
+
                 // Send results to CustomerIntelligence
                 context.PublishTelemetry(area: PipelineArtifactConstants.AzurePipelinesAgent, feature: PipelineArtifactConstants.PipelineCache, record: cacheRecordGet);
-                //If cache exists, return.
-                if (getResult != null)
+
+                // If cache exists and is read-only, return.
+                if (getResult != null && isImmutable == "true")
                 {
                     context.Output($"Cache with fingerprint `{getResult.Fingerprint}` already exists.");
                     return;

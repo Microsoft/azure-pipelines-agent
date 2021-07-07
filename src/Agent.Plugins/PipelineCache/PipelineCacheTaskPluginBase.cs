@@ -134,7 +134,7 @@ namespace Agent.Plugins.PipelineCache
             CancellationToken token);
 
         // Properties set by tasks
-        protected static class PipelineCacheTaskPluginConstants
+        internal static class PipelineCacheTaskPluginConstants
         {
             public static readonly string Key = "key"; // this needs to match the input in the task.
             public static readonly string RestoreKeys = "restoreKeys";
@@ -142,6 +142,7 @@ namespace Agent.Plugins.PipelineCache
             public static readonly string PipelineId = "pipelineId";
             public static readonly string CacheHitVariable = "cacheHitVar";
             public static readonly string Salt = "salt";
+            public static readonly string Immutable = "immutable";
         }
     }
 }
