@@ -9,6 +9,7 @@ WorkingDirectory={{AgentRoot}}
 KillMode=process
 KillSignal=SIGTERM
 TimeoutStopSec=5min
+Environment=DOCKER_CONFIG={{AgentRoot}}/docker
 
 [Install]
 WantedBy=multi-user.target
