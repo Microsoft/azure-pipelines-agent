@@ -56,6 +56,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             switch (PlatformUtil.HostOS)
             {
                 case PlatformUtil.OS.Linux:
+                case PlatformUtil.OS.FreeBSD:
                 case PlatformUtil.OS.OSX:
                     credentialCache.Add(new Uri(url), "NTLM", credential);
                     break;

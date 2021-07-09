@@ -100,7 +100,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     {
                         Process.Start(new ProcessStartInfo() { FileName = codeResult.VerificationUrl, UseShellExecute = true });
                     }
-                    else if (PlatformUtil.RunningOnLinux)
+                    else if (PlatformUtil.RunningOnLinux || PlatformUtil.RunningOnFreeBSD)
                     {
                         Process.Start(new ProcessStartInfo() { FileName = "xdg-open", Arguments = codeResult.VerificationUrl });
                     }

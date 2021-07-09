@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release.ContainerFetchEng
         {
             ArgUtil.NotNull(request, nameof(request));
 
-            if (PlatformUtil.RunningOnMacOS || PlatformUtil.RunningOnLinux)
+            if (PlatformUtil.RunningOnMacOS || PlatformUtil.RunningOnLinux || PlatformUtil.RunningOnFreeBSD)
             {
                 request.Version = HttpVersion.Version11;
             }

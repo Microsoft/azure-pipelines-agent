@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         public static StringComparison FilePathStringComparison
         {
             get =>
-                PlatformUtil.RunningOnLinux
+                (PlatformUtil.RunningOnLinux || PlatformUtil.RunningOnFreeBSD)
                 ? StringComparison.Ordinal
                 : StringComparison.OrdinalIgnoreCase;
         }

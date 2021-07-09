@@ -48,7 +48,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release.Artifacts
                 request.Headers.Add("Authorization", "Token " + accessToken);
                 request.Headers.Add("User-Agent", "VSTS-Agent/" + BuildConstants.AgentPackage.Version);
 
-                if (PlatformUtil.RunningOnMacOS || PlatformUtil.RunningOnLinux)
+                if (PlatformUtil.RunningOnMacOS || PlatformUtil.RunningOnLinux || PlatformUtil.RunningOnFreeBSD)
                 {
                     request.Version = HttpVersion.Version11;
                 }

@@ -51,6 +51,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener.Configuration
         [Trait("Category", "ArgumentValidator")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public void WindowsLogonAccountValidator()
         {
             using (TestHostContext hc = new TestHostContext(this))

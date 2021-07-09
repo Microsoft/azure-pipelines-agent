@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/bin/bash
 PACKAGERUNTIME=$1
 PRECACHE=$2
 LAYOUT_DIR=$3
@@ -140,6 +140,18 @@ function acquireExternalTool() {
     fi
 }
 
+function linkExternalTool() {
+    local source_file=$1 # E.g. /usr/local/bin/node
+    local target_dir="$LAYOUT_DIR/externals/$2" # E.g. $LAYOUT_DIR/externals/node/bin
+    local target_name=$3 # E.g. node
+    if [ -d "$target_dir" ]; then
+        rm -rf "$target_dir" || checkRC 'rm'
+    fi
+
+    mkdir -p "$target_dir" || checkRC 'mkdir'
+    ln -s "$source_file" "$target_dir/$target_name" || checkRC 'ln'
+}
+
 # Download the external tools only for Windows.
 if [[ "$PACKAGERUNTIME" == "win-x64" ]]; then
     acquireExternalTool "$CONTAINER_URL/azcopy/1/azcopy.zip" azcopy
@@ -184,8 +196,8 @@ if [[ "$PACKAGERUNTIME" == "osx-x64" ]]; then
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-darwin-x64.tar.gz" node10 fix_nested_dir
 fi
 
-# Download the external tools common across OSX and Linux PACKAGERUNTIMEs.
-if [[ "$PACKAGERUNTIME" == "linux-x64" || "$PACKAGERUNTIME" == "linux-arm" || "$PACKAGERUNTIME" == "linux-arm64" || "$PACKAGERUNTIME" == "osx-x64" || "$PACKAGERUNTIME" == "rhel.6-x64" ]]; then
+# Download the external tools common across OSX, Linux and FreeBSD PACKAGERUNTIMEs.
+if [[ "$PACKAGERUNTIME" == "freebsd-x64" || "$PACKAGERUNTIME" == "linux-x64" || "$PACKAGERUNTIME" == "linux-arm" || "$PACKAGERUNTIME" == "linux-arm64" || "$PACKAGERUNTIME" == "osx-x64" || "$PACKAGERUNTIME" == "rhel.6-x64" ]]; then
     acquireExternalTool "$CONTAINER_URL/tee/14_135_0/TEE-CLC-14.135.0.zip" tee fix_nested_dir
     acquireExternalTool "$CONTAINER_URL/vso-task-lib/0.5.5/vso-task-lib.tar.gz" vso-task-lib
 fi
@@ -210,6 +222,14 @@ if [[ "$PACKAGERUNTIME" == "linux-arm64" ]]; then
         acquireExternalTool "$NODE_URL/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-arm64.tar.gz" node fix_nested_dir
     fi
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-linux-arm64.tar.gz" node10 fix_nested_dir
+fi
+
+# Create a link to node only for FreeBSD.
+if [[ "$PACKAGERUNTIME" == "freebsd-x64" ]]; then
+    if [[ "$INCLUDE_NODE6" == "true" ]]; then
+        linkExternalTool /usr/local/bin/node node/bin node
+    fi
+    linkExternalTool /usr/local/bin/node node10/bin node
 fi
 
 if [[ "$L1_MODE" != "" || "$PRECACHE" != "" ]]; then

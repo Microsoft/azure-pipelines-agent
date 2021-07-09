@@ -78,7 +78,7 @@
 
   <Target Name="TestL0" DependsOnTargets="GenerateConstant">
     <Exec Command="dotnet build Test/Test.csproj -c $(BUILDCONFIG) /p:PackageRuntime=$(PackageRuntime)" ConsoleToMSBuild="true" />
-    <Exec Command="dotnet test Test/Test.csproj --settings $(MSBuildProjectDirectory)/Test/CodeCoverage.runsettings --no-build --logger:trx --collect:&quot;Code Coverage&quot;  --filter &quot;$(TestFilters)&quot; /p:PackageRuntime=$(PackageRuntime)" ConsoleToMSBuild="true" />
+    <Exec Command="dotnet test Test/Test.csproj -c $(BUILDCONFIG) --settings $(MSBuildProjectDirectory)/Test/CodeCoverage.runsettings --no-build --logger:trx --collect:&quot;Code Coverage&quot;  --filter &quot;$(TestFilters)&quot; /p:PackageRuntime=$(PackageRuntime)" ConsoleToMSBuild="true" />
   </Target>
 
   <Target Name="TestL1" DependsOnTargets="GenerateConstant">
@@ -99,7 +99,7 @@
              Properties="Configuration=$(BUILDCONFIG);PackageRuntime=$(PackageRuntime);Version=1.0.0.0;RuntimeIdentifier=$(PackageRuntime);PublishDir=$(L1Root)/bin" />
 
     <Exec Command="dotnet build Test/Test.csproj -c $(BUILDCONFIG) /p:PackageRuntime=$(PackageRuntime) -o $(L1Root)/bin" ConsoleToMSBuild="true" />
-    <Exec Command="dotnet test Test/Test.csproj -o $(L1Root)/bin --no-build --logger:trx --filter &quot;$(TestFilters)&quot;" ConsoleToMSBuild="true" />
+    <Exec Command="dotnet test Test/Test.csproj -c $(BUILDCONFIG) -o $(L1Root)/bin --no-build --logger:trx --filter &quot;$(TestFilters)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <Target Name="Layout" DependsOnTargets="Clean;Build">

@@ -518,6 +518,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Trait("Category", "Worker")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         public void MarksTrackingConfigForGarbageCollection_Legacy()
         {
             using (TestHostContext hc = Setup())

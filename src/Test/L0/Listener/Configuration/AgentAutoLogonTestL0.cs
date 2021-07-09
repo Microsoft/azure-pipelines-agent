@@ -17,6 +17,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
 {
     [Trait("SkipOn", "darwin")]
     [Trait("SkipOn", "linux")]
+    [Trait("SkipOn", "freebsd")]
     public sealed class AgentAutoLogonTestL0
     {
         private Mock<INativeWindowsServiceHelper> _windowsServiceHelper;

@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void GetHandlerHostOnlyTests()
         {
-            var nodeData = new NodeHandlerData() { Platforms=new string[]{"linux", "osx" }};
+            var nodeData = new NodeHandlerData() { Platforms=new string[]{"linux", "freebsd", "osx" }};
             var nodeOnlyExecutionData = new ExecutionData();
             nodeOnlyExecutionData.Node = nodeData;
             var powerShell3Data = new PowerShell3HandlerData() { Platforms=new string[]{"windows"}};

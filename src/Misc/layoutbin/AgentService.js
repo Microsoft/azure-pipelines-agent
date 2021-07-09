@@ -5,7 +5,7 @@
 var childProcess = require("child_process");
 var path = require("path")
 
-var supported = ['linux', 'darwin']
+var supported = ['linux', 'freebsd', 'darwin']
 
 if (supported.indexOf(process.platform) == -1) {
     console.log('Unsupported platform: ' + process.platform);

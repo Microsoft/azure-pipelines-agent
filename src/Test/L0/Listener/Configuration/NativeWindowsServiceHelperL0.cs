@@ -16,6 +16,7 @@ namespace Test.L0.Listener.Configuration
 {
     [Trait("SkipOn", "darwin")]
     [Trait("SkipOn", "linux")]
+    [Trait("SkipOn", "freebsd")]
     public class NativeWindowsServiceHelperL0
     {
 
