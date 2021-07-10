@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Content.Common.Tracing;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 
 namespace Agent.Plugins.PipelineArtifact
 {
@@ -67,6 +68,7 @@ namespace Agent.Plugins.PipelineArtifact
         static readonly string pipelineVersionToDownloadLatest = "latest";
         static readonly string pipelineVersionToDownloadSpecific = "specific";
         static readonly string pipelineVersionToDownloadLatestFromBranch = "latestFromBranch";
+        static readonly string pipelineVersionToDownloadPullRequestMergeTarget = "pullRequestMergeTarget";
 
         protected override async Task ProcessCommandInternalAsync(
             AgentTaskPluginExecutionContext context,
@@ -254,6 +256,16 @@ namespace Agent.Plugins.PipelineArtifact
                     {
                         pipelineId = await this.GetPipelineIdAsync(context, pipelineDefinition, pipelineVersionToDownload, projectId.ToString(), tagsInput, resultFilter, branchName, cancellationToken: token);
                     }
+                    else if (pipelineVersionToDownload == pipelineVersionToDownloadPullRequestMergeTarget)
+                    {
+                        branchName = context.Variables.GetValueOrDefault("system.pullrequest.targetbranch")?.Value;
+                        if (branchName == null)
+                        {
+                            context.Warning($"Build version to download '{pipelineVersionToDownloadPullRequestMergeTarget}' is only supported in builds triggered by pull requests. Falling back to '{pipelineVersionToDownloadLatest}'.");
+                            pipelineVersionToDownload = pipelineVersionToDownloadLatest;
+                        }
+                        pipelineId = await this.GetPipelineIdAsync(context, pipelineDefinition, pipelineVersionToDownload, projectId.ToString(), tagsInput, resultFilter, branchName: branchName, cancellationToken: token);
+                    }
                     else
                     {
                         throw new InvalidOperationException("Unreachable code!");
@@ -338,20 +350,32 @@ namespace Agent.Plugins.PipelineArtifact
             }
             var definitions = new List<int>() { definition };
 
-            List<Build> list;
-            if (pipelineVersionToDownload == pipelineVersionToDownloadLatest)
-            {
-                list = await buildHttpClient.GetBuildsAsync(project, definitions, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending, resultFilter: resultFilter);
-            }
-            else if (pipelineVersionToDownload == pipelineVersionToDownloadLatestFromBranch)
-            {
-                list = await buildHttpClient.GetBuildsAsync(project, definitions, branchName: branchName, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending, resultFilter: resultFilter);
-            }
-            else
-            {
-                throw new InvalidOperationException("Unreachable code!");
-            }
+            List<Build> list = await buildHttpClient.GetBuildsAsync(project, definitions, branchName: branchName, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending, resultFilter: resultFilter);
 
+            if (pipelineVersionToDownload == pipelineVersionToDownloadPullRequestMergeTarget)
+            {
+                if (!Int32.TryParse(context.Variables.GetValueOrDefault("system.pullrequest.pullrequestid").Value, out int pullreuestId))
+                {
+                    throw new InvalidOperationException($"Expected system.pullrequest.pullrequestid to be set.");
+                }
+                GitHttpClient gitHttpClient = connection.GetClient<GitHttpClient>();
+                var pullRequest = await gitHttpClient.GetPullRequestByIdAsync(project, pullreuestId);
+                var targetCommitId = pullRequest.LastMergeTargetCommit.CommitId;
+
+                var build = list.FirstOrDefault(build => build.SourceVersion == targetCommitId);
+                if (build == null)
+                {
+                    // No completed builds match. Try searching in-progress builds in case the artifact was published but the build hasn't finished
+                    build = (await buildHttpClient.GetBuildsAsync(project, definitions, branchName: branchName, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending, statusFilter: BuildStatus.InProgress))
+                            .FirstOrDefault(build => build.SourceVersion == targetCommitId);
+                }
+                list.Clear();
+                if (build != null)
+                {
+                    list.Add(build);
+                }
+            }
+ 
             if (list.Count > 0)
             {
                 return list.First().Id;
