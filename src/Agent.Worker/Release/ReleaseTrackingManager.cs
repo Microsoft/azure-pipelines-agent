@@ -130,7 +130,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
             }
 
             IEnumerable<string> gcTrackingFiles = Directory.EnumerateFiles(gcDirectory, "*.json");
-            if (gcTrackingFiles == null || gcTrackingFiles.Count() == 0)
+            if (gcTrackingFiles == null || !gcTrackingFiles.Any())
             {
                 executionContext.Output(StringUtil.Loc("GCReleaseDirIsEmpty", gcDirectory));
                 return;
@@ -138,7 +138,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
 
             Trace.Info($"Find {gcTrackingFiles.Count()} GC tracking files.");
 
-            if (gcTrackingFiles.Count() > 0)
+            if (gcTrackingFiles.Any())
             {
                 foreach (string gcFile in gcTrackingFiles)
                 {

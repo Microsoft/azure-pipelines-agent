@@ -158,7 +158,7 @@ namespace Agent.Plugins
                     }
 
                     IEnumerable<BuildArtifact> pipelineArtifacts = artifacts.Where(a => string.Equals(a.Resource.Type, PipelineArtifactConstants.PipelineArtifact, StringComparison.OrdinalIgnoreCase));
-                    if (pipelineArtifacts.Count() == 0)
+                    if (!pipelineArtifacts.Any())
                     {
                         throw new ArgumentException("Could not find any pipeline artifacts in the build.");
                     }

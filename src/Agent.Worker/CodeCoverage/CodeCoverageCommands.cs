@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage
             context.Output(StringUtil.Loc("ReadingCodeCoverageSummary", _summaryFileLocation));
             var coverageData = reader.GetCodeCoverageSummary(context, _summaryFileLocation);
 
-            if (coverageData == null || coverageData.Count() == 0)
+            if (coverageData == null || !coverageData.Any())
             {
                 context.Warning(StringUtil.Loc("CodeCoverageDataIsNull"));
             }
@@ -93,7 +93,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage
             CancellationToken cancellationToken)
         {
             //step 2: publish code coverage summary to TFS
-            if (coverageData != null && coverageData.Count() > 0)
+            if (coverageData != null && coverageData.Any())
             {
                 commandContext.Output(StringUtil.Loc("PublishingCodeCoverage"));
                 foreach (var coverage in coverageData)

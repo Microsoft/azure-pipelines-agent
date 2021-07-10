@@ -93,7 +93,7 @@ namespace Agent.Plugins
             tracer.Info($"Start downloading FCS artifact- {artifact.Name}");
             IEnumerable<Func<string, bool>> minimatcherFuncs = MinimatchHelper.GetMinimatchFuncs(minimatchPatterns, tracer, downloadParameters.CustomMinimatchOptions);
 
-            if (minimatcherFuncs != null && minimatcherFuncs.Count() != 0)
+            if (minimatcherFuncs != null && minimatcherFuncs.Any())
             {
                 items = this.GetFilteredItems(items, minimatcherFuncs);
             }

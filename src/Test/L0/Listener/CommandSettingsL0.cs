@@ -1153,7 +1153,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 var command = new CommandSettings(hc, args: new string[] { "badcommand" });
 
                 // Assert.
-                Assert.True(command.ParseErrors.Count() > 0);
+                Assert.True(command.ParseErrors.Any());
             }
         }
 
@@ -1168,7 +1168,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 var command = new CommandSettings(hc, args: new string[] { "--badflag" });
 
                 // Assert.
-                Assert.True(command.ParseErrors.Count() > 0);
+                Assert.True(command.ParseErrors.Any());
             }
         }
 
@@ -1183,7 +1183,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 var command = new CommandSettings(hc, args: new string[] { "--badargname", "bad arg value" });
 
                 // Assert.
-                Assert.True(command.ParseErrors.Count() > 0);
+                Assert.True(command.ParseErrors.Any());
             }
         }
 
