@@ -337,6 +337,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 // Ensure .taskkey file exist so we can mount it.
                 string taskKeyFile = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), ".taskkey");
+                // If the previous clean up failed, we want to start with an empty taskkey file so try deleting again
+                if (File.Exists(taskKeyFile))
+                {
+                    try
+                    {
+                        File.Delete(taskKeyFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.Error($"Caught exception while attempting to delete taskKey file {taskKeyFile}: {ex}");
+                    }
+                }
 
                 if (!File.Exists(taskKeyFile))
                 {
